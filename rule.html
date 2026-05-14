@@ -2,110 +2,112 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
 <title>アイテムルーレット</title>
 
 <style>
 
 body{
-    font-family:sans-serif;
-    text-align:center;
-    background:#f5f5f5;
-    margin:0;
-    padding:20px;
+font-family:sans-serif;
+text-align:center;
+background:#f5f5f5;
+margin:0;
+padding:20px;
 }
 
 .box{
-    background:white;
-    margin:20px auto;
-    padding:20px;
-    border-radius:15px;
-    max-width:380px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+background:white;
+margin:20px auto;
+padding:20px;
+border-radius:15px;
+max-width:380px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
 .result{
-    font-size:30px;
-    font-weight:bold;
-    margin:30px 0;
-    min-height:50px;
-    transition:0.2s;
+font-size:30px;
+font-weight:bold;
+margin:30px 0;
+min-height:50px;
+transition:0.2s;
 }
 
 .spinning{
-    animation:flash 0.1s infinite;
+animation:flash 0.1s infinite;
 }
 
 @keyframes flash{
-    0%{
-        transform:scale(1);
-    }
 
-    50%{
-        transform:scale(1.08);
-    }
+0%{
+transform:scale(1);
+}
 
-    100%{
-        transform:scale(1);
-    }
+50%{
+transform:scale(1.08);
+}
+
+100%{
+transform:scale(1);
+}
 }
 
 .buttons{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
+display:flex;
+flex-direction:column;
+gap:10px;
 }
 
 button{
-    padding:12px;
-    font-size:16px;
-    border:none;
-    border-radius:10px;
-    cursor:pointer;
+padding:12px;
+font-size:16px;
+border:none;
+border-radius:10px;
+cursor:pointer;
 }
 
 .spin{
-    background:#4CAF50;
-    color:white;
+background:#4CAF50;
+color:white;
 }
 
 .exclude{
-    background:#f44336;
-    color:white;
+background:#f44336;
+color:white;
 }
 
 .back{
-    background:#2196F3;
-    color:white;
+background:#2196F3;
+color:white;
 }
 
 .reset{
-    background:#777;
-    color:white;
+background:#777;
+color:white;
 }
 
 .history{
-    margin-top:20px;
-    text-align:left;
+margin-top:20px;
+text-align:left;
 }
 
 .history h3{
-    margin-bottom:10px;
+margin-bottom:10px;
 }
 
 .history-list{
-    background:#fafafa;
-    border:1px solid #ddd;
-    border-radius:10px;
-    padding:10px;
-    max-height:200px;
-    overflow-y:auto;
+background:#fafafa;
+border:1px solid #ddd;
+border-radius:10px;
+padding:10px;
+max-height:200px;
+overflow-y:auto;
 }
 
 .history-item{
-    padding:5px 0;
-    border-bottom:1px solid #eee;
+padding:5px 0;
+border-bottom:1px solid #eee;
 }
 
 </style>
@@ -120,255 +122,310 @@ button{
 <script>
 
 const items = [
-    "ビンゴ",
-    "四捨五入",
-    "レベル指定",
-    "１時間＋１",
-    "１時間－１",
-    "自分引き直し禁止",
-    "相手引き直し禁止",
-    "３曲音程バー無し",
-    "ユニ指定",
-    "点数当て＋２全ミス－５"
+"ビンゴ",
+"四捨五入",
+"レベル指定",
+"１時間＋１",
+"１時間－１",
+"自分引き直し禁止",
+"相手引き直し禁止",
+"３曲音程バー無し",
+"ユニ指定",
+"点数当て＋２全ミス－５"
 ];
 
 function createRoulette(id, title){
 
-    const container =
-        document.getElementById(id);
+const container =
+document.getElementById(id);
+
+container.innerHTML = `
+<h1>${title}</h1>
+
+<div class="result"
+id="${id}-result">
+</div>
+
+<div class="buttons">
+
+<button class="spin"
+onclick="${id}.spin()">
+まわす
+</button>
+
+<button class="exclude"
+onclick="${id}.exclude()">
+今後表示しない
+</button>
+
+<button class="back"
+onclick="${id}.back()">
+一つ前に戻る
+</button>
+
+<button class="reset"
+onclick="${id}.reset()">
+保存リセット
+</button>
 
-    container.innerHTML = `
-        <h1>${title}</h1>
+</div>
+
+<div class="history">
 
-        <div class="result"
-            id="${id}-result">
-        </div>
+<h3>履歴</h3>
+
+<div class="history-list"
+id="${id}-history">
+</div>
 
-        <div class="buttons">
+</div>
+`;
 
-            <button class="spin"
-                onclick="${id}.spin()">
-                まわす
-            </button>
+let current =
+localStorage.getItem(
+id + "-current"
+) || "";
 
-            <button class="exclude"
-                onclick="${id}.exclude()">
-                今後表示しない
-            </button>
+let previous =
+localStorage.getItem(
+id + "-previous"
+) || "";
 
-            <button class="back"
-                onclick="${id}.back()">
-                一つ前に戻る
-            </button>
+const excluded =
+new Set(
+JSON.parse(
+localStorage.getItem(
+id + "-excluded"
+)
+) || []
+);
 
-            <button class="reset"
-                onclick="${id}.reset()">
-                保存リセット
-            </button>
+let history =
+JSON.parse(
+localStorage.getItem(
+id + "-history"
+)
+) || [];
 
-        </div>
+function save(){
 
-        <div class="history">
+localStorage.setItem(
+id + "-excluded",
+JSON.stringify([...excluded])
+);
 
-            <h3>履歴</h3>
+localStorage.setItem(
+id + "-history",
+JSON.stringify(history)
+);
 
-            <div class="history-list"
-                id="${id}-history">
-            </div>
+localStorage.setItem(
+id + "-current",
+current
+);
 
-        </div>
-    `;
+localStorage.setItem(
+id + "-previous",
+previous
+);
+}
 
-    let current = "";
-    let previous = "";
+function getRandom(){
 
-    const excluded =
-        new Set(
-            JSON.parse(
-                localStorage.getItem(id + "-excluded")
-            ) || []
-        );
+const available =
+items.filter(
+item => !excluded.has(item)
+);
 
-    let history =
-        JSON.parse(
-            localStorage.getItem(id + "-history")
-        ) || [];
+if(available.length === 0){
 
-    function save(){
+return "項目がありません";
 
-        localStorage.setItem(
-            id + "-excluded",
-            JSON.stringify([...excluded])
-        );
+}
 
-        localStorage.setItem(
-            id + "-history",
-            JSON.stringify(history)
-        );
-    }
+return available[
+Math.floor(
+Math.random()
+* available.length
+)
+];
+}
 
-    function getRandom(){
+function update(text){
 
-        const available =
-            items.filter(
-                item => !excluded.has(item)
-            );
+document.getElementById(
+`${id}-result`
+).textContent = text;
+}
 
-        if(available.length === 0){
-            return "項目がありません";
-        }
+function updateHistory(){
 
-        return available[
-            Math.floor(
-                Math.random() * available.length
-            )
-        ];
-    }
+const historyDiv =
+document.getElementById(
+`${id}-history`
+);
 
-    function update(text){
+historyDiv.innerHTML = "";
 
-        document.getElementById(
-            `${id}-result`
-        ).textContent = text;
-    }
+[...history]
+.reverse()
+.forEach(item => {
 
-    function updateHistory(){
+const div =
+document.createElement("div");
 
-        const historyDiv =
-            document.getElementById(
-                `${id}-history`
-            );
+div.className =
+"history-item";
 
-        historyDiv.innerHTML = "";
+div.textContent =
+item;
 
-        [...history]
-        .reverse()
-        .forEach(item => {
+historyDiv.appendChild(div);
 
-            const div =
-                document.createElement("div");
+});
+}
 
-            div.className = "history-item";
+updateHistory();
 
-            div.textContent = item;
+if(current !== ""){
+update(current);
+}
 
-            historyDiv.appendChild(div);
+return {
 
-        });
-    }
+spin(){
 
-    updateHistory();
+const resultDiv =
+document.getElementById(
+`${id}-result`
+);
 
-    return {
+resultDiv.classList.add(
+"spinning"
+);
 
-        spin(){
+let count = 0;
 
-            const resultDiv =
-                document.getElementById(
-                    `${id}-result`
-                );
+const interval =
+setInterval(() => {
 
-            resultDiv.classList.add("spinning");
+update(
+items[
+Math.floor(
+Math.random()
+* items.length
+)
+]
+);
 
-            let count = 0;
+count++;
 
-            const interval =
-                setInterval(() => {
+if(count >= 15){
 
-                    update(
-                        items[
-                            Math.floor(
-                                Math.random()
-                                * items.length
-                            )
-                        ]
-                    );
+clearInterval(interval);
 
-                    count++;
+resultDiv.classList.remove(
+"spinning"
+);
 
-                    if(count >= 15){
+previous = current;
 
-                        clearInterval(interval);
+current = getRandom();
 
-                        resultDiv.classList.remove(
-                            "spinning"
-                        );
+update(current);
 
-                        previous = current;
+history.push(current);
 
-                        current = getRandom();
+if(history.length > 20){
 
-                        update(current);
+history.shift();
 
-                        history.push(current);
+}
 
-                        if(history.length > 20){
-                            history.shift();
-                        }
+save();
 
-                        save();
+updateHistory();
+}
 
-                        updateHistory();
-                    }
+}, 80);
+},
 
-                }, 80);
-        },
+exclude(){
 
-        exclude(){
+if(current === "") return;
 
-            if(current === "") return;
+if(current === "項目がありません")
+return;
 
-            excluded.add(current);
+excluded.add(current);
 
-            save();
+save();
 
-            this.spin();
-        },
+this.spin();
+},
 
-        back(){
+back(){
 
-            if(previous === "") return;
+if(previous === "") return;
 
-            current = previous;
+current = previous;
 
-            update(current);
-        },
+update(current);
 
-        reset(){
+save();
+},
 
-            excluded.clear();
+reset(){
 
-            history = [];
+const result =
+confirm(
+"保存データをリセットしますか？"
+);
 
-            localStorage.removeItem(
-                id + "-excluded"
-            );
+if(!result) return;
 
-            localStorage.removeItem(
-                id + "-history"
-            );
+excluded.clear();
 
-            updateHistory();
+history = [];
 
-            this.spin();
-        }
-    };
+current = "";
+
+previous = "";
+
+localStorage.removeItem(
+id + "-excluded"
+);
+
+localStorage.removeItem(
+id + "-history"
+);
+
+localStorage.removeItem(
+id + "-current"
+);
+
+localStorage.removeItem(
+id + "-previous"
+);
+
+update("");
+
+updateHistory();
+}
+};
 }
 
 const roulette1 =
-    createRoulette(
-        "roulette1",
-        "アイテムルーレット（藤）"
-    );
+createRoulette(
+"roulette1",
+"アイテムルーレット（藤）"
+);
 
 const roulette2 =
-    createRoulette(
-        "roulette2",
-        "アイテムルーレット（茶）"
-    );
-
-roulette1.spin();
-roulette2.spin();
+createRoulette(
+"roulette2",
+"アイテムルーレット（茶）"
+);
 
 </script>
 
