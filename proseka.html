@@ -1,42 +1,155 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>プロセカルーレット</title>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>プロセカルーレット</title>
+
+<style>
+
+body{
+font-family:sans-serif;
+text-align:center;
+background:#f5f5f5;
+margin:0;
+padding:20px;
+}
+
+.container{
+max-width:500px;
+margin:auto;
+background:white;
+padding:20px;
+border-radius:20px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+#word{
+font-size:30px;
+font-weight:bold;
+margin:30px 0;
+min-height:50px;
+}
+
+.spinning{
+animation:flash 0.1s infinite;
+}
+
+@keyframes flash{
+
+0%{
+transform:scale(1);
+}
+
+50%{
+transform:scale(1.08);
+}
+
+100%{
+transform:scale(1);
+}
+}
+
+button{
+width:100%;
+padding:12px;
+margin:6px 0;
+border:none;
+border-radius:10px;
+font-size:16px;
+cursor:pointer;
+}
+
+.spin{
+background:#4CAF50;
+color:white;
+}
+
+.exclude{
+background:#f44336;
+color:white;
+}
+
+.back{
+background:#2196F3;
+color:white;
+}
+
+.reset{
+background:#777;
+color:white;
+}
+
+.history{
+margin-top:20px;
+text-align:left;
+}
+
+.history-box{
+background:#fafafa;
+border:1px solid #ddd;
+border-radius:10px;
+padding:10px;
+max-height:250px;
+overflow-y:auto;
+}
+
+.history-item{
+border-bottom:1px solid #eee;
+padding:5px 0;
+}
+
+</style>
 </head>
 
 <body>
 
-    <h1>プロセカルーレット</h1>
+<div class="container">
 
-    <p id="word"></p>
+<h1>プロセカルーレット</h1>
 
-    <button onclick="generateRandomWord()">
-        まわす
-    </button>
+<p id="word"></p>
 
-    <button onclick="excludeWord()">
-        今後表示しない
-    </button>
+<button class="spin"
+onclick="generateRandomWord()">
+まわす
+</button>
 
-    <button onclick="goBack()">
-        一つ前に戻る
-    </button>
+<button class="exclude"
+onclick="excludeWord()">
+今後表示しない
+</button>
 
-    <button onclick="resetExcludedWords()">
-        保存リセット
-    </button>
+<button class="back"
+onclick="goBack()">
+一つ前に戻る
+</button>
+
+<button class="reset"
+onclick="resetExcludedWords()">
+保存リセット
+</button>
+
+<div class="history">
+
+<h2>履歴</h2>
+
+<div id="history"
+class="history-box">
+</div>
+
+</div>
+
+</div>
 
 <script>
-
-/* ↓ この行は不要なので削除 */
-/// var array=new Array("const words",)
 
 /* 曲一覧 */
 const words = [
 
-"Tell Your World","ネクストネスト","メルト","初音ミクの消失","Blessing","alive","ロキ","テオ", "ヒバナ", "ハッピーシンセサイザ","Nostarogic","ツギハギスタッカート","劣等上等","ドクター＝ファンクビート","フラジール","ブリキノダンス","スイートマジック","ぼうけんのしょがきえました！"
+"Tell Your World","ネクストネスト","メルト","初音ミクの消失","Blessing","テオ", "ヒバナ", "ハッピーシンセサイザ","Nostarogic","ツギハギスタッカート","劣等上等","ドクター＝ファンクビート","フラジール","ブリキノダンス","スイートマジック","ぼうけんのしょがきえました！"
     ,"シャルル","ハロ/ハワユ","自傷無色","needeLe","アイドル新鋭隊","Ready Steady","セカイはまだ始まってすらいない","悔やむと書いてミライ","セカイ","ワーワーワールド","アスノヨゾラ哨戒班","ニア","Just Be Frends","脱法ロック","命に嫌われている","ワールドイズマイン","ダンスロボットダンス","Hand in hand","夜咄ディセイブ"
 ,"Gimme × Gimme","ビバハピ","ジャンキーナイトタウンオーケストラ","ミラクルペイント","on the rocks","携帯恋話","39ミュージック","青く駆けろ！","ステラ", "Leia","ジャックポットサッドガール","メルティランドナイトメア","乙女解剖","potatoになっていく","ローリンガール","モア！ジャンプ！モア","裏表ラバーズ","アンノウン・マザーグース"
 ,"愛されなくても君がいる","ウミユリ海底譚","Forward","独りんぼエンヴィー","ニジイロストーリーズ","ODDS&ENDS","ドラマツルギー","グリーンライツ・セレナーデ","恋愛裁判","＊ハロー、プラネット","千本桜","ECHO","チュルリラ・チュルリラ・ダッダッダ！","ブレス・ユア・ブレス","とても痛い痛がりたい","霽れを待つ","ワールズ・エンド・ダンスホール"
@@ -65,117 +178,254 @@ const words = [
 ,"君が飛び降りるのならば","鎖の少女-Re Alive-","Internet Junk Junkie","幸福刑","透過する温度","好き！雪！本気マジック","Snow Fairy Story","雪がとける前に","スターナイトスノウ","四角い地球を丸くする","アイ","ぽかぽかの星","Fondant Step","SHIAWASE FOR YOU!","アリア","幕を下ろそう、パレードへ","Ribbon","ハオ","このまんまでいこう","とびだせ！わんだぴょい","erase or zero","About me","ラムネ","Catch the Wave","カラフルファンデーション","バイオレンストリガー","ラヴィ",
 "アルカリレットウセイ","天藍のアイスヘヴン","告白","傀儡のうつつ","ダイダイダイダイダイキライ","ワンダーラスト","あいしていたのに","フロイライン＝オジョウサマ","Nyanyanyanyanyanyanya!","T氏の話を信じるな","ヘッジホッグ","CRASH THE PARTY","Who?","導火愛","世界の歩き方"];
 
+/* ↓ ここに続き全部入れる */
+];
 
+/* 現在 */
+let currentWord =
+localStorage.getItem("currentWord")
+|| "";
 
-let currentWord = "";
+/* 一つ前 */
+let previousWord =
+localStorage.getItem("previousWord")
+|| "";
 
-let previousWord = "";
-
-/* 除外曲を読み込み */
+/* 除外 */
 const excludedWords =
-    new Set(
-        JSON.parse(
-            localStorage.getItem("excludedWords")
-        ) || []
-    );
+new Set(
+JSON.parse(
+localStorage.getItem(
+"excludedWords"
+)
+) || []
+);
+
+/* 履歴 */
+let history =
+JSON.parse(
+localStorage.getItem(
+"history"
+)
+) || [];
 
 /* 保存 */
-function saveExcludedWords(){
+function saveData(){
 
-    localStorage.setItem(
-        "excludedWords",
-        JSON.stringify([...excludedWords])
-    );
+localStorage.setItem(
+"excludedWords",
+JSON.stringify([...excludedWords])
+);
+
+localStorage.setItem(
+"history",
+JSON.stringify(history)
+);
+
+localStorage.setItem(
+"currentWord",
+currentWord
+);
+
+localStorage.setItem(
+"previousWord",
+previousWord
+);
 }
 
-/* ランダム取得 */
+/* 履歴表示 */
+function updateHistory(){
+
+const historyDiv =
+document.getElementById(
+"history"
+);
+
+historyDiv.innerHTML = "";
+
+[...history]
+.reverse()
+.forEach(item => {
+
+const div =
+document.createElement("div");
+
+div.className =
+"history-item";
+
+div.textContent =
+item;
+
+historyDiv.appendChild(div);
+
+});
+}
+
+/* ランダム */
 function getRandomWord(){
 
-    const availableWords =
-        words.filter(
-            word => !excludedWords.has(word)
-        );
+const availableWords =
+words.filter(
+word =>
+!excludedWords.has(word)
+);
 
-    if(availableWords.length === 0){
+if(availableWords.length === 0){
 
-        return "曲がありません";
+return "曲がありません";
 
-    }
-
-    const randomIndex =
-        Math.floor(
-            Math.random() * availableWords.length
-        );
-
-    return availableWords[randomIndex];
 }
 
-/* 曲表示 */
+return availableWords[
+Math.floor(
+Math.random()
+* availableWords.length
+)
+];
+}
+
+/* 表示 */
+function updateWord(){
+
+document.getElementById(
+"word"
+).textContent =
+currentWord;
+}
+
+/* ルーレット */
 function generateRandomWord(){
 
-    previousWord = currentWord;
+const wordElement =
+document.getElementById(
+"word"
+);
 
-    currentWord = getRandomWord();
+wordElement.classList.add(
+"spinning"
+);
 
-    document.getElementById("word").textContent =
-        currentWord;
+let count = 0;
+
+const interval =
+setInterval(() => {
+
+wordElement.textContent =
+words[
+Math.floor(
+Math.random()
+* words.length
+)
+];
+
+count++;
+
+if(count >= 15){
+
+clearInterval(interval);
+
+wordElement.classList.remove(
+"spinning"
+);
+
+previousWord =
+currentWord;
+
+currentWord =
+getRandomWord();
+
+updateWord();
+
+history.push(currentWord);
+
+if(history.length > 30){
+
+history.shift();
+
+}
+
+saveData();
+
+updateHistory();
+
+}
+
+}, 80);
 }
 
 /* 除外 */
 function excludeWord(){
 
-    if(currentWord === "") return;
+if(currentWord === "") return;
 
-    if(currentWord === "曲がありません") return;
+if(currentWord === "曲がありません")
+return;
 
-    excludedWords.add(currentWord);
+excludedWords.add(currentWord);
 
-    saveExcludedWords();
+saveData();
 
-    generateRandomWord();
+generateRandomWord();
 }
 
 /* 戻る */
 function goBack(){
 
-    if(previousWord !== ""){
+if(previousWord === ""){
 
-        excludedWords.delete(previousWord);
+alert(
+"一つ前がありません"
+);
 
-        saveExcludedWords();
-
-        currentWord = previousWord;
-
-        document.getElementById("word").textContent =
-            currentWord;
-
-    }else{
-
-        alert("一つ前の単語がありません。");
-
-    }
+return;
 }
 
-/* 保存リセット */
+currentWord =
+previousWord;
+
+updateWord();
+
+saveData();
+}
+
+/* リセット */
 function resetExcludedWords(){
 
-    const result =
-        confirm("保存データをリセットしますか？");
+const result =
+confirm(
+"保存データをリセットしますか？"
+);
 
-    if(result){
+if(!result) return;
 
-        excludedWords.clear();
+excludedWords.clear();
 
-        localStorage.removeItem("excludedWords");
+history = [];
 
-        alert("リセットしました");
+currentWord = "";
 
-        generateRandomWord();
-    }
+previousWord = "";
+
+localStorage.clear();
+
+updateHistory();
+
+generateRandomWord();
 }
 
 /* 初期表示 */
+
+if(currentWord !== ""){
+
+updateWord();
+
+}else{
+
 generateRandomWord();
+
+}
+
+updateHistory();
 
 </script>
 
