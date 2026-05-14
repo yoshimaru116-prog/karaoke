@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プロセカルーレット</title>
+</head>
+
+<body>
+
+    <h1>アイテムルーレット（藤）</h1>
+
+    <p id="word"></p>
+
+    <button onclick="generateRandomWord()">
+        まわす
+    </button>
+
+    <button onclick="excludeWord()">
+        今後表示しない
+    </button>
+
+    <button onclick="goBack()">
+        一つ前に戻る
+    </button>
+
+    <button onclick="resetExcludedWords()">
+        保存リセット
+    </button>
+
+<script>
+
+
+
+/* ルーレット一覧 */
+const words = ["ビンゴ","四捨五入","レベル指定", "１時間＋１", "１時間－１","引き直し２倍＋鬼レンチャン","自分８５以上で＋１、９０以上で＋２","自分引き直し禁止","相手引き直し禁止", "３曲音程バー無し","ユニ指定","点数当て＋２全ミス－５"
+];
+
+/* 現在の項目 */
+let currentWord = "";
+
+/* 一つ前 */
+let previousWord = "";
+
+/* 保存済み除外データ */
+const excludedWords =
+    new Set(
+        JSON.parse(
+            localStorage.getItem("excludedWords")
+        ) || []
+    );
+
+/* 保存 */
+function saveExcludedWords(){
+
+    localStorage.setItem(
+        "excludedWords",
+        JSON.stringify([...excludedWords])
+    );
+}
+
+/* ランダム取得 */
+function getRandomWord(){
+
+    const availableWords =
+        words.filter(
+            word => !excludedWords.has(word)
+        );
+
+    if(availableWords.length === 0){
+
+        return "項目がありません";
+
+    }
+
+    const randomIndex =
+        Math.floor(
+            Math.random() * availableWords.length
+        );
+
+    return availableWords[randomIndex];
+}
+
+/* 表示 */
+function generateRandomWord(){
+
+    previousWord = currentWord;
+
+    currentWord = getRandomWord();
+
+    document.getElementById("word").textContent =
+        currentWord;
+}
+
+/* 除外 */
+function excludeWord(){
+
+    if(currentWord === "") return;
+
+    if(currentWord === "項目がありません") return;
+
+    excludedWords.add(currentWord);
+
+    saveExcludedWords();
+
+    generateRandomWord();
+}
+
+/* 戻る */
+function goBack(){
+
+    if(previousWord !== ""){
+
+        excludedWords.delete(previousWord);
+
+        saveExcludedWords();
+
+        currentWord = previousWord;
+
+        document.getElementById("word").textContent =
+            currentWord;
+
+    }else{
+
+        alert("一つ前の項目がありません。");
+
+    }
+}
+
+/* 保存リセット */
+function resetExcludedWords(){
+
+    const result =
+        confirm("保存データをリセットしますか？");
+
+    if(result){
+
+        excludedWords.clear();
+
+        localStorage.removeItem("excludedWords");
+
+        alert("リセットしました");
+
+        generateRandomWord();
+    }
+}
+
+/* 初期表示 */
+generateRandomWord();
+
+</script>
+
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プロセカルーレット</title>
+</head>
+
+<body>
+
+    <h1>アイテムルーレット（茶）</h1>
+
+    <p id="word"></p>
+
+    <button onclick="generateRandomWord()">
+        まわす
+    </button>
+
+    <button onclick="excludeWord()">
+        今後表示しない
+    </button>
+
+    <button onclick="goBack()">
+        一つ前に戻る
+    </button>
+
+    <button onclick="resetExcludedWords()">
+        保存リセット
+    </button>
+
+<script>
+
+
+
+/* ルーレット一覧 */
+const words = ["ビンゴ","四捨五入","レベル指定", "１時間＋１", "１時間－１","引き直し２倍＋鬼レンチャン","自分８５以上で＋１、９０以上で＋２","自分引き直し禁止","相手引き直し禁止", "３曲音程バー無し","ユニ指定","点数当て＋２全ミス－５"
+];
+
+/* 現在の項目 */
+let currentWord = "";
+
+/* 一つ前 */
+let previousWord = "";
+
+/* 保存済み除外データ */
+const excludedWords =
+    new Set(
+        JSON.parse(
+            localStorage.getItem("excludedWords")
+        ) || []
+    );
+
+/* 保存 */
+function saveExcludedWords(){
+
+    localStorage.setItem(
+        "excludedWords",
+        JSON.stringify([...excludedWords])
+    );
+}
+
+/* ランダム取得 */
+function getRandomWord(){
+
+    const availableWords =
+        words.filter(
+            word => !excludedWords.has(word)
+        );
+
+    if(availableWords.length === 0){
+
+        return "項目がありません";
+
+    }
+
+    const randomIndex =
+        Math.floor(
+            Math.random() * availableWords.length
+        );
+
+    return availableWords[randomIndex];
+}
+
+/* 表示 */
+function generateRandomWord(){
+
+    previousWord = currentWord;
+
+    currentWord = getRandomWord();
+
+    document.getElementById("word").textContent =
+        currentWord;
+}
+
+/* 除外 */
+function excludeWord(){
+
+    if(currentWord === "") return;
+
+    if(currentWord === "項目がありません") return;
+
+    excludedWords.add(currentWord);
+
+    saveExcludedWords();
+
+    generateRandomWord();
+}
+
+/* 戻る */
+function goBack(){
+
+    if(previousWord !== ""){
+
+        excludedWords.delete(previousWord);
+
+        saveExcludedWords();
+
+        currentWord = previousWord;
+
+        document.getElementById("word").textContent =
+            currentWord;
+
+    }else{
+
+        alert("一つ前の項目がありません。");
+
+    }
+}
+
+/* 保存リセット */
+function resetExcludedWords(){
+
+    const result =
+        confirm("保存データをリセットしますか？");
+
+    if(result){
+
+        excludedWords.clear();
+
+        localStorage.removeItem("excludedWords");
+
+        alert("リセットしました");
+
+        generateRandomWord();
+    }
+}
+
+/* 初期表示 */
+generateRandomWord();
+
+</script>
+
+</body>
+</html>
