@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プロセカルーレット</title>
+</head>
+<body>
+    <h1>レベル指定</h1>
+    <p id="word"></p>
+    <button onclick="generateRandomWord()">まわす</button>
+    
+
+    <script>
+    var array=new Array("const words",)    
+        const words = ["２６以下","２７","２８","２９","３０","３１","３２以上"];
+        let currentWord;
+        const excludedWords = new Set();
+        const previousWords = [];
+
+        function getRandomWord() {
+            const availableWords = words.filter(word => !excludedWords.has(word));
+            return availableWords[Math.floor(Math.random() * availableWords.length)];
+        }
+
+        function generateRandomWord() {
+            currentWord = getRandomWord();
+            document.getElementById("word").textContent = currentWord;
+        }
+
+        function excludeWord() {
+            excludedWords.add(currentWord);
+            previousWords.push(currentWord);
+            generateRandomWord();
+        }
+
+        function goBack() {
+            if (previousWords.length > 0) {
+                excludedWords.delete(previousWords.pop());
+                generateRandomWord();
+            } else {
+                alert("一つ前の単語がありません。");
+            }
+        }
+
+        // 初期の単語を表示
+        generateRandomWord();
+    </script>
+</body>
+</html>
