@@ -1,70 +1,113 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>プロセカルーレット</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>アイテムルーレット</title>
+
+<style>
+body{
+    font-family:sans-serif;
+    text-align:center;
+}
+
+.box{
+    margin:40px auto;
+    padding:20px;
+    border:1px solid #ccc;
+    width:300px;
+}
+</style>
 </head>
 
 <body>
 
-    <h1>アイテムルーレット（藤）</h1>
+<!-- 藤 -->
+<div class="box">
 
-    <p id="word"></p>
+<h1>アイテムルーレット（藤）</h1>
 
-    <button onclick="generateRandomWord()">
-        まわす
-    </button>
+<p id="word1"></p>
 
-    <button onclick="excludeWord()">
-        今後表示しない
-    </button>
+<button onclick="generateRandomWord1()">
+まわす
+</button>
 
-    <button onclick="goBack()">
-        一つ前に戻る
-    </button>
+<button onclick="excludeWord1()">
+今後表示しない
+</button>
 
-    <button onclick="resetExcludedWords()">
-        保存リセット
-    </button>
+<button onclick="goBack1()">
+一つ前に戻る
+</button>
+
+<button onclick="resetExcludedWords1()">
+保存リセット
+</button>
+
+</div>
+
+<!-- 茶 -->
+<div class="box">
+
+<h1>アイテムルーレット（茶）</h1>
+
+<p id="word2"></p>
+
+<button onclick="generateRandomWord2()">
+まわす
+</button>
+
+<button onclick="excludeWord2()">
+今後表示しない
+</button>
+
+<button onclick="goBack2()">
+一つ前に戻る
+</button>
+
+<button onclick="resetExcludedWords2()">
+保存リセット
+</button>
+
+</div>
 
 <script>
 
+/* ===== 藤 ===== */
 
-
-/* ルーレット一覧 */
-const words = ["ビンゴ","四捨五入","レベル指定", "１時間＋１", "１時間－１","引き直し２倍＋鬼レンチャン","自分８５以上で＋１、９０以上で＋２","自分引き直し禁止","相手引き直し禁止", "３曲音程バー無し","ユニ指定","点数当て＋２全ミス－５"
+const words1 = [
+"ビンゴ",
+"四捨五入",
+"レベル指定",
+"１時間＋１",
+"１時間－１"
 ];
 
-/* 現在の項目 */
-let currentWord = "";
+let currentWord1 = "";
+let previousWord1 = "";
 
-/* 一つ前 */
-let previousWord = "";
-
-/* 保存済み除外データ */
-const excludedWords =
+const excludedWords1 =
     new Set(
         JSON.parse(
-            localStorage.getItem("excludedWords")
+            localStorage.getItem("excludedWords1")
         ) || []
     );
 
-/* 保存 */
-function saveExcludedWords(){
+function saveExcludedWords1(){
 
     localStorage.setItem(
-        "excludedWords",
-        JSON.stringify([...excludedWords])
+        "excludedWords1",
+        JSON.stringify([...excludedWords1])
     );
 }
 
-/* ランダム取得 */
-function getRandomWord(){
+function getRandomWord1(){
 
     const availableWords =
-        words.filter(
-            word => !excludedWords.has(word)
+        words1.filter(
+            word => !excludedWords1.has(word)
         );
 
     if(availableWords.length === 0){
@@ -81,145 +124,84 @@ function getRandomWord(){
     return availableWords[randomIndex];
 }
 
-/* 表示 */
-function generateRandomWord(){
+function generateRandomWord1(){
 
-    previousWord = currentWord;
+    previousWord1 = currentWord1;
 
-    currentWord = getRandomWord();
+    currentWord1 = getRandomWord1();
 
-    document.getElementById("word").textContent =
-        currentWord;
+    document.getElementById("word1").textContent =
+        currentWord1;
 }
 
-/* 除外 */
-function excludeWord(){
+function excludeWord1(){
 
-    if(currentWord === "") return;
+    if(currentWord1 === "") return;
 
-    if(currentWord === "項目がありません") return;
+    excludedWords1.add(currentWord1);
 
-    excludedWords.add(currentWord);
+    saveExcludedWords1();
 
-    saveExcludedWords();
-
-    generateRandomWord();
+    generateRandomWord1();
 }
 
-/* 戻る */
-function goBack(){
+function goBack1(){
 
-    if(previousWord !== ""){
+    if(previousWord1 !== ""){
 
-        excludedWords.delete(previousWord);
+        excludedWords1.delete(previousWord1);
 
-        saveExcludedWords();
+        saveExcludedWords1();
 
-        currentWord = previousWord;
+        currentWord1 = previousWord1;
 
-        document.getElementById("word").textContent =
-            currentWord;
-
-    }else{
-
-        alert("一つ前の項目がありません。");
-
+        document.getElementById("word1").textContent =
+            currentWord1;
     }
 }
 
-/* 保存リセット */
-function resetExcludedWords(){
+function resetExcludedWords1(){
 
-    const result =
-        confirm("保存データをリセットしますか？");
+    excludedWords1.clear();
 
-    if(result){
+    localStorage.removeItem("excludedWords1");
 
-        excludedWords.clear();
-
-        localStorage.removeItem("excludedWords");
-
-        alert("リセットしました");
-
-        generateRandomWord();
-    }
+    generateRandomWord1();
 }
 
-/* 初期表示 */
-generateRandomWord();
+/* ===== 茶 ===== */
 
-</script>
-
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>プロセカルーレット</title>
-</head>
-
-<body>
-
-    <h1>アイテムルーレット（茶）</h1>
-
-    <p id="word"></p>
-
-    <button onclick="generateRandomWord()">
-        まわす
-    </button>
-
-    <button onclick="excludeWord()">
-        今後表示しない
-    </button>
-
-    <button onclick="goBack()">
-        一つ前に戻る
-    </button>
-
-    <button onclick="resetExcludedWords()">
-        保存リセット
-    </button>
-
-<script>
-
-
-
-/* ルーレット一覧 */
-const words = ["ビンゴ","四捨五入","レベル指定", "１時間＋１", "１時間－１","引き直し２倍＋鬼レンチャン","自分８５以上で＋１、９０以上で＋２","自分引き直し禁止","相手引き直し禁止", "３曲音程バー無し","ユニ指定","点数当て＋２全ミス－５"
+const words2 = [
+"自分引き直し禁止",
+"相手引き直し禁止",
+"３曲音程バー無し",
+"ユニ指定",
+"点数当て＋２全ミス－５"
 ];
 
-/* 現在の項目 */
-let currentWord = "";
+let currentWord2 = "";
+let previousWord2 = "";
 
-/* 一つ前 */
-let previousWord = "";
-
-/* 保存済み除外データ */
-const excludedWords =
+const excludedWords2 =
     new Set(
         JSON.parse(
-            localStorage.getItem("excludedWords")
+            localStorage.getItem("excludedWords2")
         ) || []
     );
 
-/* 保存 */
-function saveExcludedWords(){
+function saveExcludedWords2(){
 
     localStorage.setItem(
-        "excludedWords",
-        JSON.stringify([...excludedWords])
+        "excludedWords2",
+        JSON.stringify([...excludedWords2])
     );
 }
 
-/* ランダム取得 */
-function getRandomWord(){
+function getRandomWord2(){
 
     const availableWords =
-        words.filter(
-            word => !excludedWords.has(word)
+        words2.filter(
+            word => !excludedWords2.has(word)
         );
 
     if(availableWords.length === 0){
@@ -236,72 +218,54 @@ function getRandomWord(){
     return availableWords[randomIndex];
 }
 
-/* 表示 */
-function generateRandomWord(){
+function generateRandomWord2(){
 
-    previousWord = currentWord;
+    previousWord2 = currentWord2;
 
-    currentWord = getRandomWord();
+    currentWord2 = getRandomWord2();
 
-    document.getElementById("word").textContent =
-        currentWord;
+    document.getElementById("word2").textContent =
+        currentWord2;
 }
 
-/* 除外 */
-function excludeWord(){
+function excludeWord2(){
 
-    if(currentWord === "") return;
+    if(currentWord2 === "") return;
 
-    if(currentWord === "項目がありません") return;
+    excludedWords2.add(currentWord2);
 
-    excludedWords.add(currentWord);
+    saveExcludedWords2();
 
-    saveExcludedWords();
-
-    generateRandomWord();
+    generateRandomWord2();
 }
 
-/* 戻る */
-function goBack(){
+function goBack2(){
 
-    if(previousWord !== ""){
+    if(previousWord2 !== ""){
 
-        excludedWords.delete(previousWord);
+        excludedWords2.delete(previousWord2);
 
-        saveExcludedWords();
+        saveExcludedWords2();
 
-        currentWord = previousWord;
+        currentWord2 = previousWord2;
 
-        document.getElementById("word").textContent =
-            currentWord;
-
-    }else{
-
-        alert("一つ前の項目がありません。");
-
+        document.getElementById("word2").textContent =
+            currentWord2;
     }
 }
 
-/* 保存リセット */
-function resetExcludedWords(){
+function resetExcludedWords2(){
 
-    const result =
-        confirm("保存データをリセットしますか？");
+    excludedWords2.clear();
 
-    if(result){
+    localStorage.removeItem("excludedWords2");
 
-        excludedWords.clear();
-
-        localStorage.removeItem("excludedWords");
-
-        alert("リセットしました");
-
-        generateRandomWord();
-    }
+    generateRandomWord2();
 }
 
 /* 初期表示 */
-generateRandomWord();
+generateRandomWord1();
+generateRandomWord2();
 
 </script>
 
