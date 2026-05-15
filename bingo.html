@@ -41,34 +41,36 @@ textarea{
     font-weight:bold;
     border:3px solid #ccc;
     user-select:none;
-    transition:0.2s;
 }
 
-.spin{
-    background:#fff3cd;
-}
-
+/* タップ */
 .open{
-    background:#81c784;
-    color:white;
+    background:#81c784 !important;
+    color:white !important;
 }
 
-/* 中央（通常状態） */
+/* 中央 */
 .center{
     background:white;
     color:black;
-    border-color:#ccc;
 }
 
-/* ⭐ 重要：中央もopenで緑にする */
+/* 中央＋タップ */
 .center.open{
-    background:#81c784;
-    color:white;
+    background:#81c784 !important;
+    color:white !important;
 }
 
+/* ビンゴ */
 .bingo{
     background:#ff5252 !important;
-    color:white;
+    color:white !important;
+}
+
+/* ★中央もビンゴで赤優先 */
+.center.open.bingo{
+    background:#ff5252 !important;
+    color:white !important;
 }
 
 button{
@@ -110,7 +112,7 @@ button{
 
 <label>
 <input type="checkbox" id="centerToggle">
-固定
+中央固定
 </label>
 
 <input type="text" id="centerValue" value="90">
@@ -118,6 +120,7 @@ button{
 <br>
 
 <button onclick="generate()">スタート</button>
+<button onclick="resetGame()">リセット</button>
 
 <div id="bingoText"></div>
 <div id="bingoCount"></div>
@@ -129,6 +132,7 @@ button{
 const grid = document.getElementById("grid");
 
 let open = [];
+let board = [];
 
 function shuffle(a){
     for(let i=a.length-1;i>0;i--){
@@ -138,17 +142,93 @@ function shuffle(a){
     return a;
 }
 
+/* ======================
+   💾 保存
+====================== */
+function saveGame(){
+    localStorage.setItem("bingoSave", JSON.stringify({
+        board,
+        open,
+        input: document.getElementById("input").value,
+        centerMode: document.getElementById("centerToggle").checked,
+        centerValue: document.getElementById("centerValue").value
+    }));
+}
+
+/* ======================
+   🔁 復元
+====================== */
+function loadGame(){
+
+    const saved = localStorage.getItem("bingoSave");
+    if(!saved) return;
+
+    const data = JSON.parse(saved);
+
+    document.getElementById("input").value = data.input || "";
+    document.getElementById("centerToggle").checked = data.centerMode || false;
+    document.getElementById("centerValue").value = data.centerValue || "";
+
+    board = data.board || [];
+    open = data.open || [];
+
+    if(board.length){
+        render();
+    }
+}
+
+/* ======================
+   🎨 描画
+====================== */
+function render(){
+
+    grid.innerHTML = "";
+
+    const centerMode = document.getElementById("centerToggle").checked;
+
+    board.forEach((v,i)=>{
+
+        const cell = document.createElement("div");
+        cell.className = "cell";
+
+        if(centerMode && i===4){
+            cell.classList.add("center");
+        }
+
+        if(open.includes(i)){
+            cell.classList.add("open");
+        }
+
+        cell.textContent = v;
+
+        cell.addEventListener("click",()=>{
+
+            if(open.includes(i)){
+                open = open.filter(x=>x!==i);
+            }else{
+                open.push(i);
+            }
+
+            saveGame();
+            check();
+            render();
+        });
+
+        grid.appendChild(cell);
+    });
+
+    check();
+}
+
+/* ======================
+   🎰 スロット生成
+====================== */
 function generate(){
 
     let items = document.getElementById("input").value
     .split("\n")
     .map(v=>v.trim())
     .filter(v=>v!=="");
-
-    if(items.length === 0){
-        alert("入力してください");
-        return;
-    }
 
     const centerMode = document.getElementById("centerToggle").checked;
     const centerValue = document.getElementById("centerValue").value;
@@ -162,7 +242,7 @@ function generate(){
     ? items.concat(items).slice(0,8)
     : items.concat(items).slice(0,9);
 
-    const board = centerMode ?
+    board = centerMode ?
     [
         selected[0],selected[1],selected[2],
         selected[3],centerValue,selected[4],
@@ -171,6 +251,7 @@ function generate(){
     : selected;
 
     open = [];
+
     grid.innerHTML = "";
     document.getElementById("bingoText").textContent = "";
     document.getElementById("bingoCount").textContent = "";
@@ -190,13 +271,10 @@ function generate(){
 
         const interval = setInterval(()=>{
 
-            // 中央は固定表示
             if(centerMode && i===4){
                 cell.textContent = centerValue;
                 return;
             }
-
-            cell.classList.add("spin");
 
             cell.textContent =
             pool[Math.floor(Math.random()*pool.length)];
@@ -204,12 +282,8 @@ function generate(){
             count++;
 
             if(count > 30 + i*3){
-
                 clearInterval(interval);
-
-                cell.classList.remove("spin");
                 cell.textContent = v;
-
             }
 
         },60);
@@ -217,21 +291,25 @@ function generate(){
         cell.addEventListener("click",()=>{
 
             if(open.includes(i)){
-                open = open.filter(v=>v!==i);
-                cell.classList.remove("open");
+                open = open.filter(x=>x!==i);
             }else{
                 open.push(i);
-                cell.classList.add("open");
             }
 
+            saveGame();
             check();
+            render();
         });
 
     });
 
+    saveGame();
     check();
 }
 
+/* ======================
+   🟩 ビンゴ判定（中央もOK）
+====================== */
 function check(){
 
     const lines = [
@@ -240,21 +318,25 @@ function check(){
         [0,4,8],[2,4,6]
     ];
 
-    document.querySelectorAll(".cell")
-    .forEach(c => c.classList.remove("bingo"));
+    const cells = document.querySelectorAll(".cell");
+
+    cells.forEach(c=>{
+        c.classList.remove("bingo");
+    });
 
     let bingo = 0;
 
-    lines.forEach(l =>{
+    lines.forEach(line=>{
 
-        if(l.every(i => open.includes(i))){
+        if(line.every(i=>open.includes(i))){
             bingo++;
-            l.forEach(i=>{
-                document.querySelectorAll(".cell")[i]
-                .classList.add("bingo");
+
+            line.forEach(i=>{
+                const cell = cells[i];
+                cell.classList.add("bingo");
+                cell.classList.add("open");
             });
         }
-
     });
 
     document.getElementById("bingoText")
@@ -262,7 +344,28 @@ function check(){
 
     document.getElementById("bingoCount")
     .textContent = "ビンゴ数：" + bingo;
+
+    saveGame();
 }
+
+/* ======================
+   🔴 リセット
+====================== */
+function resetGame(){
+
+    localStorage.removeItem("bingoSave");
+
+    open = [];
+    board = [];
+
+    grid.innerHTML = "";
+
+    document.getElementById("bingoText").textContent = "";
+    document.getElementById("bingoCount").textContent = "";
+}
+
+/* 起動 */
+loadGame();
 
 </script>
 
