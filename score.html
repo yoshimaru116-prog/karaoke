@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1対1スコアボード</title>
+
+<style>
+body{
+    font-family: sans-serif;
+    text-align: center;
+    background: #f0f0f0;
+    margin: 0;
+    padding: 20px;
+}
+
+h1{
+    margin-bottom: 20px;
+}
+
+.container{
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+.player{
+    background: white;
+    padding: 20px;
+    width: 40%;
+    border-radius: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.name{
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.score{
+    font-size: 50px;
+    margin: 20px 0;
+}
+
+button{
+    font-size: 20px;
+    padding: 15px;
+    width: 100%;
+    margin: 5px 0;
+    border: none;
+    border-radius: 10px;
+    background: #4caf50;
+    color: white;
+}
+
+button:active{
+    transform: scale(0.95);
+}
+
+.reset{
+    background: #f44336;
+    margin-top: 20px;
+}
+
+#result{
+    font-size: 24px;
+    margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>1対1 スコアボード</h1>
+
+<div class="container">
+
+    <div class="player">
+        <div class="name" id="name1">プレイヤー1</div>
+        <div class="score" id="score1">0</div>
+        <button onclick="add(1)">＋1</button>
+    </div>
+
+    <div class="player">
+        <div class="name" id="name2">プレイヤー2</div>
+        <div class="score" id="score2">0</div>
+        <button onclick="add(2)">＋1</button>
+    </div>
+
+</div>
+
+<div id="result">勝敗待ち</div>
+
+<button class="reset" onclick="resetGame()">リセット</button>
+
+<script>
+
+let s1 = 0;
+let s2 = 0;
+
+function add(player){
+    if(player === 1){
+        s1++;
+        document.getElementById("score1").innerText = s1;
+    } else {
+        s2++;
+        document.getElementById("score2").innerText = s2;
+    }
+    judge();
+}
+
+function judge(){
+    let result = "";
+
+    if(s1 > s2){
+        result = "プレイヤー1リード";
+    } else if(s1 < s2){
+        result = "プレイヤー2リード";
+    } else {
+        result = "同点";
+    }
+
+    document.getElementById("result").innerText = result;
+}
+
+function resetGame(){
+    s1 = 0;
+    s2 = 0;
+    document.getElementById("score1").innerText = 0;
+    document.getElementById("score2").innerText = 0;
+    judge();
+}
+
+</script>
+
+</body>
+</html>
