@@ -3,133 +3,222 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>1対1スコアボード</title>
+<title>プロスコア管理</title>
 
 <style>
 body{
     font-family: sans-serif;
     text-align: center;
     background: #f0f0f0;
-    margin: 0;
-    padding: 20px;
-}
-
-h1{
-    margin-bottom: 20px;
+    padding: 15px;
 }
 
 .container{
-    display: flex;
+    display:flex;
     justify-content: space-around;
-    margin-top: 20px;
 }
 
 .player{
-    background: white;
-    padding: 20px;
-    width: 40%;
-    border-radius: 15px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.name{
-    font-size: 20px;
-    margin-bottom: 10px;
+    background:white;
+    padding:10px;
+    width:45%;
+    border-radius:10px;
 }
 
 .score{
-    font-size: 50px;
-    margin: 20px 0;
+    font-size:40px;
 }
 
 button{
-    font-size: 20px;
-    padding: 15px;
-    width: 100%;
-    margin: 5px 0;
-    border: none;
-    border-radius: 10px;
-    background: #4caf50;
-    color: white;
+    width:100%;
+    padding:8px;
+    margin:4px 0;
 }
 
-button:active{
-    transform: scale(0.95);
+.minus{ background:#f44336; color:white; }
+.custom{ margin-top:5px; }
+
+#top{
+    background:#222;
+    color:white;
+    padding:10px;
+    border-radius:10px;
+    margin-bottom:10px;
 }
 
-.reset{
-    background: #f44336;
-    margin-top: 20px;
-}
-
-#result{
-    font-size: 24px;
-    margin-top: 20px;
+.log{
+    background:white;
+    margin-top:10px;
+    padding:10px;
+    text-align:left;
+    height:150px;
+    overflow:auto;
+    font-size:14px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>1対1 スコアボード</h1>
+<h1>スコア管理</h1>
+
+<div id="top">
+合計：<span id="total">0 - 0</span><br>
+点差：<span id="diff">0</span><br>
+時間：<span id="time">0分</span>
+</div>
 
 <div class="container">
 
-    <div class="player">
-        <div class="name" id="name1">プレイヤー1</div>
-        <div class="score" id="score1">0</div>
-        <button onclick="add(1)">＋1</button>
-    </div>
+<div class="player">
+<h3>P1</h3>
+<div class="score" id="s1">0</div>
 
-    <div class="player">
-        <div class="name" id="name2">プレイヤー2</div>
-        <div class="score" id="score2">0</div>
-        <button onclick="add(2)">＋1</button>
-    </div>
+<button onclick="add(1,1,'＋1')">＋1</button>
+<button onclick="add(1,2,'＋2')">＋2</button>
+<button onclick="add(1,3,'＋3')">＋3</button>
+<button onclick="add(1,5,'＋5')">＋5</button>
+<button class="minus" onclick="add(1,-1,'−1')">−1</button>
+
+<input id="p1custom" type="number" placeholder="自由入力">
+<button class="custom" onclick="custom(1)">追加</button>
+
+<h4>プリセット</h4>
+<button onclick="savePreset(1)">保存</button>
+<div id="preset1"></div>
 
 </div>
 
-<div id="result">勝敗待ち</div>
+<div class="player">
+<h3>P2</h3>
+<div class="score" id="s2">0</div>
 
-<button class="reset" onclick="resetGame()">リセット</button>
+<button onclick="add(2,1,'＋1')">＋1</button>
+<button onclick="add(2,2,'＋2')">＋2</button>
+<button onclick="add(2,3,'＋3')">＋3</button>
+<button onclick="add(2,5,'＋5')">＋5</button>
+<button class="minus" onclick="add(2,-1,'−1')">−1</button>
+
+<input id="p2custom" type="number" placeholder="自由入力">
+<button class="custom" onclick="custom(2)">追加</button>
+
+<h4>プリセット</h4>
+<button onclick="savePreset(2)">保存</button>
+<div id="preset2"></div>
+
+</div>
+
+</div>
+
+<h3>実況ログ</h3>
+<div class="log" id="log"></div>
 
 <script>
 
-let s1 = 0;
-let s2 = 0;
+let p1=0, p2=0;
+let sets=[];
+let startTime = Date.now();
 
-function add(player){
-    if(player === 1){
-        s1++;
-        document.getElementById("score1").innerText = s1;
+// 🔥 加点
+function add(player, point, label){
+
+    if(player===1){
+        p1 += point;
+        if(p1<0)p1=0;
+        document.getElementById("s1").innerText=p1;
     } else {
-        s2++;
-        document.getElementById("score2").innerText = s2;
-    }
-    judge();
-}
-
-function judge(){
-    let result = "";
-
-    if(s1 > s2){
-        result = "プレイヤー1リード";
-    } else if(s1 < s2){
-        result = "プレイヤー2リード";
-    } else {
-        result = "同点";
+        p2 += point;
+        if(p2<0)p2=0;
+        document.getElementById("s2").innerText=p2;
     }
 
-    document.getElementById("result").innerText = result;
+    log(player,label);
+    update();
 }
 
-function resetGame(){
-    s1 = 0;
-    s2 = 0;
-    document.getElementById("score1").innerText = 0;
-    document.getElementById("score2").innerText = 0;
-    judge();
+// 🔥 自由入力
+function custom(player){
+    let val = Number(document.getElementById(player===1?"p1custom":"p2custom").value);
+    if(isNaN(val)||val===0) return;
+
+    add(player,val,"自由+"+val);
+
+    document.getElementById(player===1?"p1custom":"p2custom").value="";
 }
+
+// 🔥 プリセット保存（簡易）
+function savePreset(player){
+    let key = "preset"+player;
+    let list = JSON.parse(localStorage.getItem(key)||"[]");
+
+    list.push({p1,p2});
+    localStorage.setItem(key,JSON.stringify(list));
+
+    renderPreset(player);
+}
+
+// 表示
+function renderPreset(player){
+    let key = "preset"+player;
+    let list = JSON.parse(localStorage.getItem(key)||"[]");
+
+    let html="";
+    list.forEach((s,i)=>{
+        html+=`<button onclick="loadPreset(${player},${i})">P1:${s.p1} P2:${s.p2}</button>`;
+    });
+
+    document.getElementById("preset"+player).innerHTML=html;
+}
+
+// 読み込み
+function loadPreset(player,i){
+    let list = JSON.parse(localStorage.getItem("preset"+player)||"[]");
+    let s = list[i];
+
+    p1=s.p1;
+    p2=s.p2;
+
+    document.getElementById("s1").innerText=p1;
+    document.getElementById("s2").innerText=p2;
+
+    log(player,"プリセット読み込み");
+    update();
+}
+
+// 🔥 ログ
+function log(player,text){
+    let time = new Date().toLocaleTimeString();
+    let div = document.getElementById("log");
+    div.innerHTML += `[${time}] P${player}: ${text}<br>`;
+    div.scrollTop = div.scrollHeight;
+}
+
+// 更新
+function update(){
+
+    document.getElementById("total").innerText = `${p1} - ${p2}`;
+
+    let diff = p1-p2;
+    document.getElementById("diff").innerText = Math.abs(diff)+(diff>0?" (P1)":" (P2)");
+
+}
+
+// ⏱ 1時間ごとリセット
+setInterval(()=>{
+    let min = Math.floor((Date.now()-startTime)/60000);
+    document.getElementById("time").innerText=min+"分";
+
+    if(min>=60){
+        alert("1時間経過：リセットします");
+        p1=0;p2=0;
+        startTime=Date.now();
+        document.getElementById("s1").innerText=0;
+        document.getElementById("s2").innerText=0;
+        document.getElementById("log").innerHTML="";
+        update();
+    }
+
+},1000);
 
 </script>
 
