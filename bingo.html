@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+<title>ビンゴ</title>
+
+<style>
+
+body{
+    font-family:sans-serif;
+    text-align:center;
+    background:#f5f5f5;
+    padding:20px;
+}
+
+textarea{
+    width:320px;
+    height:100px;
+    font-size:16px;
+}
+
+.grid{
+    width:330px;
+    margin:20px auto;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+}
+
+.cell{
+    width:100px;
+    height:100px;
+    background:white;
+    border-radius:12px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:20px;
+    font-weight:bold;
+    border:3px solid #ccc;
+    user-select:none;
+    transition:0.2s;
+}
+
+.spin{
+    background:#fff3cd;
+}
+
+.open{
+    background:#81c784;
+    color:white;
+}
+
+/* 中央（通常状態） */
+.center{
+    background:white;
+    color:black;
+    border-color:#ccc;
+}
+
+/* ⭐ 重要：中央もopenで緑にする */
+.center.open{
+    background:#81c784;
+    color:white;
+}
+
+.bingo{
+    background:#ff5252 !important;
+    color:white;
+}
+
+button{
+    padding:12px 20px;
+    margin:5px;
+    font-size:18px;
+    cursor:pointer;
+}
+
+#bingoText{
+    font-size:24px;
+    font-weight:bold;
+    color:red;
+    margin-top:10px;
+}
+
+#bingoCount{
+    font-size:20px;
+    color:#1976d2;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>ビンゴ</h1>
+
+<textarea id="input">
+85
+86
+87
+88
+89
+90
+</textarea>
+
+<br>
+
+<label>
+<input type="checkbox" id="centerToggle">
+固定
+</label>
+
+<input type="text" id="centerValue" value="90">
+
+<br>
+
+<button onclick="generate()">スタート</button>
+
+<div id="bingoText"></div>
+<div id="bingoCount"></div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+
+const grid = document.getElementById("grid");
+
+let open = [];
+
+function shuffle(a){
+    for(let i=a.length-1;i>0;i--){
+        let j=Math.floor(Math.random()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+}
+
+function generate(){
+
+    let items = document.getElementById("input").value
+    .split("\n")
+    .map(v=>v.trim())
+    .filter(v=>v!=="");
+
+    if(items.length === 0){
+        alert("入力してください");
+        return;
+    }
+
+    const centerMode = document.getElementById("centerToggle").checked;
+    const centerValue = document.getElementById("centerValue").value;
+
+    let pool = [];
+    for(let i=0;i<40;i++) pool = pool.concat(items);
+
+    items = shuffle(items);
+
+    const selected = centerMode
+    ? items.concat(items).slice(0,8)
+    : items.concat(items).slice(0,9);
+
+    const board = centerMode ?
+    [
+        selected[0],selected[1],selected[2],
+        selected[3],centerValue,selected[4],
+        selected[5],selected[6],selected[7]
+    ]
+    : selected;
+
+    open = [];
+    grid.innerHTML = "";
+    document.getElementById("bingoText").textContent = "";
+    document.getElementById("bingoCount").textContent = "";
+
+    board.forEach((v,i)=>{
+
+        const cell = document.createElement("div");
+        cell.className = "cell";
+
+        if(centerMode && i===4){
+            cell.classList.add("center");
+        }
+
+        grid.appendChild(cell);
+
+        let count = 0;
+
+        const interval = setInterval(()=>{
+
+            // 中央は固定表示
+            if(centerMode && i===4){
+                cell.textContent = centerValue;
+                return;
+            }
+
+            cell.classList.add("spin");
+
+            cell.textContent =
+            pool[Math.floor(Math.random()*pool.length)];
+
+            count++;
+
+            if(count > 30 + i*3){
+
+                clearInterval(interval);
+
+                cell.classList.remove("spin");
+                cell.textContent = v;
+
+            }
+
+        },60);
+
+        cell.addEventListener("click",()=>{
+
+            if(open.includes(i)){
+                open = open.filter(v=>v!==i);
+                cell.classList.remove("open");
+            }else{
+                open.push(i);
+                cell.classList.add("open");
+            }
+
+            check();
+        });
+
+    });
+
+    check();
+}
+
+function check(){
+
+    const lines = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+    ];
+
+    document.querySelectorAll(".cell")
+    .forEach(c => c.classList.remove("bingo"));
+
+    let bingo = 0;
+
+    lines.forEach(l =>{
+
+        if(l.every(i => open.includes(i))){
+            bingo++;
+            l.forEach(i=>{
+                document.querySelectorAll(".cell")[i]
+                .classList.add("bingo");
+            });
+        }
+
+    });
+
+    document.getElementById("bingoText")
+    .textContent = bingo ? "BINGO！" : "";
+
+    document.getElementById("bingoCount")
+    .textContent = "ビンゴ数：" + bingo;
+}
+
+</script>
+
+</body>
+</html>
