@@ -2,11 +2,9 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-    
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-<title>プロセカルーレット</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>ユニットルーレット</title>
 
 <style>
 
@@ -18,13 +16,13 @@ body{
 }
 
 h1{
-    margin-bottom: 40px;
+    margin-bottom: 30px;
 }
 
 .roulette-area{
     background: white;
     padding: 20px;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
     border-radius: 20px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
@@ -46,6 +44,12 @@ h1{
     align-items: center;
     font-size: 24px;
     font-weight: bold;
+    transition: 0.2s;
+}
+
+.flash{
+    box-shadow: 0 0 15px gold;
+    transform: scale(1.05);
 }
 
 button{
@@ -58,7 +62,7 @@ button{
 }
 
 .history{
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
 .history ul{
@@ -75,233 +79,186 @@ button{
 <h1>ユニットルーレット</h1>
 
 <!-- 1個目 -->
-
 <div class="roulette-area">
 
     <h2>ユニット（藤）</h2>
 
     <div class="result-box">
-
         <div id="word1a" class="word">?</div>
         <div id="word1b" class="word">?</div>
-
     </div>
 
-    <button onclick="spin1()">
-        まわす
-    </button>
-
-    <button onclick="clearHistory1()">
-        履歴リセット
-    </button>
+    <button onclick="spin1()">まわす</button>
+    <button onclick="clearHistory1()">履歴リセット</button>
 
     <div class="history">
-
         <h3>履歴</h3>
-
         <ul id="history1"></ul>
-
     </div>
 
 </div>
 
 <!-- 2個目 -->
-
 <div class="roulette-area">
 
     <h2>ユニット（茶）</h2>
 
     <div class="result-box">
-
         <div id="word2a" class="word">?</div>
         <div id="word2b" class="word">?</div>
-
     </div>
 
-    <button onclick="spin2()">
-        まわす
-    </button>
-
-    <button onclick="clearHistory2()">
-        履歴リセット
-    </button>
+    <button onclick="spin2()">まわす</button>
+    <button onclick="clearHistory2()">履歴リセット</button>
 
     <div class="history">
-
         <h3>履歴</h3>
-
         <ul id="history2"></ul>
-
     </div>
 
 </div>
 
 <script>
 
-/* ===== 保存データ読み込み ===== */
+/* ======================
+   スロット演出関数
+====================== */
+function slotEffect(el, finalValue, pool, duration = 1200){
 
-let history1 =
-    JSON.parse(
-        localStorage.getItem("history1")
-    ) || [];
+    let start = Date.now();
 
-let history2 =
-    JSON.parse(
-        localStorage.getItem("history2")
-    ) || [];
+    let timer = setInterval(()=>{
 
-/* ===== 共通 ===== */
+        el.textContent =
+        pool[Math.floor(Math.random() * pool.length)];
 
-function getRandomPair(array){
+        if(Date.now() - start > duration){
 
-    let first =
-        Math.floor(Math.random() * array.length);
+            clearInterval(timer);
 
-    let second;
+            el.textContent = finalValue;
 
-    do{
-        second =
-            Math.floor(Math.random() * array.length);
+            el.classList.add("flash");
 
-    }while(first === second);
+            setTimeout(()=>{
+                el.classList.remove("flash");
+            }, 300);
+        }
 
-    return [
-        array[first],
-        array[second]
-    ];
+    }, 60);
 }
 
-/* ===== 1個目 ===== */
+/* ======================
+   履歴
+====================== */
+let history1 =
+    JSON.parse(localStorage.getItem("history1")) || [];
 
-const words1 = [
-    "バチャシン","バチャシン",
-    "モモジャン","モモジャン",
+let history2 =
+    JSON.parse(localStorage.getItem("history2")) || [];
+
+/* ======================
+   データ
+====================== */
+const words = [
+    "バチャシン", "バチャシン",
+    "モアジャン", "モアジャン",
     "レオ二", "レオ二",
-    "ビビバス",  "ビビバス",
-    "ワンダショ","ワンダショ",
-    "ニーゴ" , "ニーゴ"
+    "ビビバス", "ビビバス",
+    "ワンダショ", "ワンダショ",
+    "ニーゴ", "ニーゴ"
 ];
 
+/* ======================
+   ランダム2つ
+====================== */
+function getRandomPair(array){
+
+    let a = Math.floor(Math.random() * array.length);
+    let b;
+
+    do{
+        b = Math.floor(Math.random() * array.length);
+    }while(a === b);
+
+    return [array[a], array[b]];
+}
+
+/* ======================
+   1つ目
+====================== */
 function spin1(){
 
-    const result =
-        getRandomPair(words1);
+    const result = getRandomPair(words);
 
-    document.getElementById("word1a").textContent =
-        result[0];
+    slotEffect(document.getElementById("word1a"), result[0], words);
+    slotEffect(document.getElementById("word1b"), result[1], words);
 
-    document.getElementById("word1b").textContent =
-        result[1];
+    history1.unshift(result[0] + " ＆ " + result[1]);
 
-    history1.unshift(
-        result[0] + " ＆ " + result[1]
-    );
+    localStorage.setItem("history1", JSON.stringify(history1));
 
-    localStorage.setItem(
-        "history1",
-        JSON.stringify(history1)
-    );
-
-    displayHistory1();
+    setTimeout(displayHistory1, 1300);
 }
 
 function displayHistory1(){
 
-    const ul =
-        document.getElementById("history1");
-
+    const ul = document.getElementById("history1");
     ul.innerHTML = "";
 
-    history1.forEach(item => {
-
-        const li =
-            document.createElement("li");
-
+    history1.forEach(item=>{
+        const li = document.createElement("li");
         li.textContent = item;
-
         ul.appendChild(li);
-
     });
 }
 
 function clearHistory1(){
-
     history1 = [];
-
     localStorage.removeItem("history1");
-
     displayHistory1();
 }
 
-/* ===== 2個目 ===== */
-
-const words2 = [
-     "バチャシン","バチャシン",
-    "モモジャン","モモジャン",
-    "レオ二", "レオ二",
-    "ビビバス",  "ビビバス",
-    "ワンダショ","ワンダショ",
-    "ニーゴ" , "ニーゴ"
-];
-
+/* ======================
+   2つ目
+====================== */
 function spin2(){
 
-    const result =
-        getRandomPair(words2);
+    const result = getRandomPair(words);
 
-    document.getElementById("word2a").textContent =
-        result[0];
+    slotEffect(document.getElementById("word2a"), result[0], words);
+    slotEffect(document.getElementById("word2b"), result[1], words);
 
-    document.getElementById("word2b").textContent =
-        result[1];
+    history2.unshift(result[0] + " ＆ " + result[1]);
 
-    history2.unshift(
-        result[0] + " ＆ " + result[1]
-    );
+    localStorage.setItem("history2", JSON.stringify(history2));
 
-    localStorage.setItem(
-        "history2",
-        JSON.stringify(history2)
-    );
-
-    displayHistory2();
+    setTimeout(displayHistory2, 1300);
 }
 
 function displayHistory2(){
 
-    const ul =
-        document.getElementById("history2");
-
+    const ul = document.getElementById("history2");
     ul.innerHTML = "";
 
-    history2.forEach(item => {
-
-        const li =
-            document.createElement("li");
-
+    history2.forEach(item=>{
+        const li = document.createElement("li");
         li.textContent = item;
-
         ul.appendChild(li);
-
     });
 }
 
 function clearHistory2(){
-
     history2 = [];
-
     localStorage.removeItem("history2");
-
     displayHistory2();
 }
 
-/* ===== 初期表示 ===== */
-
+/* ======================
+   初期表示
+====================== */
 displayHistory1();
 displayHistory2();
-
-spin1();
-spin2();
 
 </script>
 
