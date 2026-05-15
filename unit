@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>プロセカルーレット</title>
+
+<style>
+
+body{
+    font-family: sans-serif;
+    background: #f5f5f5;
+    text-align: center;
+    padding: 20px;
+}
+
+h1{
+    margin-bottom: 40px;
+}
+
+.roulette-area{
+    background: white;
+    padding: 20px;
+    margin-bottom: 40px;
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.result-box{
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.word{
+    width: 140px;
+    height: 140px;
+    background: #f0f0f0;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+button{
+    margin: 5px;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.history{
+    margin-top: 20px;
+}
+
+.history ul{
+    list-style: none;
+    padding: 0;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>ユニットルーレット</h1>
+
+<!-- 1個目 -->
+
+<div class="roulette-area">
+
+    <h2>ユニット（藤）</h2>
+
+    <div class="result-box">
+
+        <div id="word1a" class="word">?</div>
+        <div id="word1b" class="word">?</div>
+
+    </div>
+
+    <button onclick="spin1()">
+        まわす
+    </button>
+
+    <button onclick="clearHistory1()">
+        履歴リセット
+    </button>
+
+    <div class="history">
+
+        <h3>履歴</h3>
+
+        <ul id="history1"></ul>
+
+    </div>
+
+</div>
+
+<!-- 2個目 -->
+
+<div class="roulette-area">
+
+    <h2>ユニット（茶）</h2>
+
+    <div class="result-box">
+
+        <div id="word2a" class="word">?</div>
+        <div id="word2b" class="word">?</div>
+
+    </div>
+
+    <button onclick="spin2()">
+        まわす
+    </button>
+
+    <button onclick="clearHistory2()">
+        履歴リセット
+    </button>
+
+    <div class="history">
+
+        <h3>履歴</h3>
+
+        <ul id="history2"></ul>
+
+    </div>
+
+</div>
+
+<script>
+
+/* ===== 保存データ読み込み ===== */
+
+let history1 =
+    JSON.parse(
+        localStorage.getItem("history1")
+    ) || [];
+
+let history2 =
+    JSON.parse(
+        localStorage.getItem("history2")
+    ) || [];
+
+/* ===== 共通 ===== */
+
+function getRandomPair(array){
+
+    let first =
+        Math.floor(Math.random() * array.length);
+
+    let second;
+
+    do{
+        second =
+            Math.floor(Math.random() * array.length);
+
+    }while(first === second);
+
+    return [
+        array[first],
+        array[second]
+    ];
+}
+
+/* ===== 1個目 ===== */
+
+const words1 = [
+    "バチャシン","バチャシン",
+    "モモジャン","モモジャン",
+    "レオ二", "レオ二",
+    "ビビバス",  "ビビバス",
+    "ワンダショ","ワンダショ",
+    "ニーゴ" , "ニーゴ"
+];
+
+function spin1(){
+
+    const result =
+        getRandomPair(words1);
+
+    document.getElementById("word1a").textContent =
+        result[0];
+
+    document.getElementById("word1b").textContent =
+        result[1];
+
+    history1.unshift(
+        result[0] + " ＆ " + result[1]
+    );
+
+    localStorage.setItem(
+        "history1",
+        JSON.stringify(history1)
+    );
+
+    displayHistory1();
+}
+
+function displayHistory1(){
+
+    const ul =
+        document.getElementById("history1");
+
+    ul.innerHTML = "";
+
+    history1.forEach(item => {
+
+        const li =
+            document.createElement("li");
+
+        li.textContent = item;
+
+        ul.appendChild(li);
+
+    });
+}
+
+function clearHistory1(){
+
+    history1 = [];
+
+    localStorage.removeItem("history1");
+
+    displayHistory1();
+}
+
+/* ===== 2個目 ===== */
+
+const words2 = [
+     "バチャシン","バチャシン",
+    "モモジャン","モモジャン",
+    "レオ二", "レオ二",
+    "ビビバス",  "ビビバス",
+    "ワンダショ","ワンダショ",
+    "ニーゴ" , "ニーゴ"
+];
+
+function spin2(){
+
+    const result =
+        getRandomPair(words2);
+
+    document.getElementById("word2a").textContent =
+        result[0];
+
+    document.getElementById("word2b").textContent =
+        result[1];
+
+    history2.unshift(
+        result[0] + " ＆ " + result[1]
+    );
+
+    localStorage.setItem(
+        "history2",
+        JSON.stringify(history2)
+    );
+
+    displayHistory2();
+}
+
+function displayHistory2(){
+
+    const ul =
+        document.getElementById("history2");
+
+    ul.innerHTML = "";
+
+    history2.forEach(item => {
+
+        const li =
+            document.createElement("li");
+
+        li.textContent = item;
+
+        ul.appendChild(li);
+
+    });
+}
+
+function clearHistory2(){
+
+    history2 = [];
+
+    localStorage.removeItem("history2");
+
+    displayHistory2();
+}
+
+/* ===== 初期表示 ===== */
+
+displayHistory1();
+displayHistory2();
+
+spin1();
+spin2();
+
+</script>
+
+</body>
+</html>
