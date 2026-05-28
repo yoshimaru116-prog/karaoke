@@ -1,74 +1,148 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-    <meta charset="UTF-8">
- <meta
+
+<meta charset="UTF-8">
+
+<meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
 >
-    <title>プロセカルーレット</title>
+
+<title>プロセカルーレット</title>
+
 <style>
 
+html,
 body{
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+
+    touch-action: manipulation;
+
+    font-family: sans-serif;
+    background: #f5f5f5;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+}
+
+/* タイトル */
+h1{
+    font-size: 36px;
+    margin-bottom: 30px;
+}
+
+/* 曲名 */
+#word{
+    font-size: 32px;
+    font-weight: bold;
+
+    margin: 30px 20px;
+
+    line-height: 1.4;
+
+    word-break: break-word;
+}
+
+/* ボタン */
+button{
+
+    width: 85%;
+    max-width: 500px;
+
+    font-size: 24px;
+
+    padding: 18px;
+
+    margin: 10px;
+
+    border: none;
+    border-radius: 18px;
+
+    background: #00bcd4;
+    color: white;
+
+    font-weight: bold;
+
     touch-action: manipulation;
 }
 
-button{
-    touch-action: manipulation;
+/* 押した時 */
+button:active{
+    transform: scale(0.98);
 }
 
 </style>
-    
+
 </head>
 
 <body>
 
-    <h1>プロセカルーレット</h1>
+<h1>プロセカルーレット</h1>
 
-    <p id="word"></p>
+<p id="word">読み込み中...</p>
 
-    <button onclick="generateRandomWord()">
-        まわす
-    </button>
+<button onclick="generateRandomWord()">
+    まわす
+</button>
 
-    <button onclick="excludeWord()">
-        今後表示しない
-    </button>
+<button onclick="excludeWord()">
+    今後表示しない
+</button>
 
-    <button onclick="goBack()">
-        一つ前に戻る
-    </button>
+<button onclick="goBack()">
+    一つ前に戻る
+</button>
 
-    <button onclick="resetExcludedWords()">
+<button onclick="resetExcludedWords()">
     保存リセット
 </button>
 
 <!-- Firebase -->
 <script type="module">
 
-/* =========================
-   Firebase設定
-========================= */
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+/* Firebase */
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
     getDatabase,
     ref,
     set,
     onValue
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* Firebaseコンソールの設定を貼る */
+/* Firebase設定 */
 const firebaseConfig = {
 
-   apiKey: "AIzaSyCvjizg21d4M6PjkKJgEzWAy6hmyHLR8j0",
-  authDomain: "proseka-roulette.firebaseapp.com",
-  databaseURL: "https://proseka-roulette-default-rtdb.firebaseio.com",
-  projectId: "proseka-roulette",
-  storageBucket: "proseka-roulette.firebasestorage.app",
-  messagingSenderId: "595448425100",
-  appId: "1:595448425100:web:3db43056c3c879f73c69a9"
+    apiKey: "AIzaSyCvjizg21d4M6PjkKJgEzWAy6hmyHLR8j0",
+
+    authDomain:
+    "proseka-roulette.firebaseapp.com",
+
+    databaseURL:
+    "https://proseka-roulette-default-rtdb.firebaseio.com",
+
+    projectId:
+    "proseka-roulette",
+
+    storageBucket:
+    "proseka-roulette.firebasestorage.app",
+
+    messagingSenderId:
+    "595448425100",
+
+    appId:
+    "1:595448425100:web:3db43056c3c879f73c69a9"
 };
 
 /* Firebase開始 */
@@ -76,11 +150,10 @@ const app = initializeApp(firebaseConfig);
 
 const db = getDatabase(app);
 
-/* =========================
-   曲データ
-========================= */
+/* 曲データ */
+const words = [
 
-const words = ["Tell Your World","ネクストネスト","メルト","初音ミクの消失","Blessing","alive","ロキ","テオ","ヒバナ","ハッピーシンセサイザ","Nostarogic","ツギハギスタッカート","劣等上等","ドクター＝ファンクビート","フラジール","ブリキノダンス","スイートマジック","ぼうけんのしょがきえました！"
+"Tell Your World","ネクストネスト","メルト","初音ミクの消失","Blessing","alive","ロキ","テオ","ヒバナ","ハッピーシンセサイザ","Nostarogic","ツギハギスタッカート","劣等上等","ドクター＝ファンクビート","フラジール","ブリキノダンス","スイートマジック","ぼうけんのしょがきえました！"
     ,"シャルル","ハロ/ハワユ","自傷無色","needeLe","アイドル新鋭隊","Ready Steady","セカイはまだ始まってすらいない","悔やむと書いてミライ","セカイ","ワーワーワールド","アスノヨゾラ哨戒班","ニア","Just Be Frends","脱法ロック","命に嫌われている","ワールドイズマイン","ダンスロボットダンス","Hand in hand","夜咄ディセイブ"
 ,"Gimme × Gimme","ビバハピ","ジャンキーナイトタウンオーケストラ","ミラクルペイント","on the rocks","携帯恋話","39ミュージック","青く駆けろ！","ステラ", "Leia","ジャックポットサッドガール","メルティランドナイトメア","乙女解剖","potatoになっていく","ローリンガール","モア！ジャンプ！モア","裏表ラバーズ","アンノウン・マザーグース"
 ,"愛されなくても君がいる","ウミユリ海底譚","Forward","独りんぼエンヴィー","ニジイロストーリーズ","ODDS&ENDS","ドラマツルギー","グリーンライツ・セレナーデ","恋愛裁判","＊ハロー、プラネット","千本桜","ECHO","チュルリラ・チュルリラ・ダッダッダ！","ブレス・ユア・ブレス","とても痛い痛がりたい","霽れを待つ","ワールズ・エンド・ダンスホール"
@@ -108,26 +181,22 @@ const words = ["Tell Your World","ネクストネスト","メルト","初音ミ�
 "カレシのジュード","パメラ","スター","あなたの空が泣くのなら","アベリア","ルマ","ロケットサイダー","その絵の名前は","金時計","征け","ファイター","IMAWANOKIWA","怪獣になりたい","0.0000034","花結び","電光刹歌","ウィーアーピコピコハンマーズ!!!!","ジェットブラック","トレジャーガーデン","最愛人生ランナー","い〜やい〜やい〜や","ドリーム・キス","Polar Star","ぼかろころしあむ","ヤンキーボーイ・ヤンキーガール","魔法少女とチョコレゐト","上弦の月","惑星ループ","黒塗り世界宛て書簡"
 ,"君が飛び降りるのならば","鎖の少女-Re Alive-","Internet Junk Junkie","幸福刑","透過する温度","好き！雪！本気マジック","Snow Fairy Story","雪がとける前に","スターナイトスノウ","四角い地球を丸くする","アイ","ぽかぽかの星","Fondant Step","SHIAWASE FOR YOU!","アリア","幕を下ろそう、パレードへ","Ribbon","ハオ","このまんまでいこう","とびだせ！わんだぴょい","erase or zero","About me","ラムネ","Catch the Wave","カラフルファンデーション","バイオレンストリガー","ラヴィ",
 "アルカリレットウセイ","天藍のアイスヘヴン","告白","傀儡のうつつ","ダイダイダイダイダイキライ","ワンダーラスト","あいしていたのに","フロイライン＝オジョウサマ","Nyanyanyanyanyanyanya!","T氏の話を信じるな","ヘッジホッグ","CRASH THE PARTY","Who?","導火愛","世界の歩き方"
+
+
 ];
 
-/* =========================
-   状態
-========================= */
-
+/* 状態 */
 let currentWord = "";
 
 let previousWord = "";
 
 let excludedWords = new Set();
 
-/* =========================
-   Firebase リアルタイム同期
-========================= */
+/* Firebase同期 */
+const excludedRef =
+    ref(db, "excludedWords");
 
-const excludedRef = ref(db, "excludedWords");
-
-/* 他の人が変更したら自動反映 */
-/* 他の人が変更したら自動反映 */
+/* Firebase読み込み */
 onValue(excludedRef, (snapshot) => {
 
     const data = snapshot.val();
@@ -142,29 +211,30 @@ onValue(excludedRef, (snapshot) => {
 
     }
 
-    /* 初期表示 */
     generateRandomWord();
-
 });
 
-/* Firebase保存 */
+/* 保存 */
 function saveExcludedWords(){
 
     set(
         excludedRef,
         [...excludedWords]
     );
+
+    console.log(
+        "保存:",
+        [...excludedWords]
+    );
 }
 
-/* =========================
-   ランダム取得
-========================= */
-
+/* ランダム取得 */
 function getRandomWord(){
 
     const availableWords =
         words.filter(
-            word => !excludedWords.has(word)
+            word =>
+            !excludedWords.has(word)
         );
 
     if(availableWords.length === 0){
@@ -175,35 +245,31 @@ function getRandomWord(){
 
     const randomIndex =
         Math.floor(
-            Math.random() * availableWords.length
+            Math.random() *
+            availableWords.length
         );
 
     return availableWords[randomIndex];
 }
 
-/* =========================
-   曲表示
-========================= */
-
+/* 曲表示 */
 window.generateRandomWord = function(){
 
     previousWord = currentWord;
 
     currentWord = getRandomWord();
 
-    document.getElementById("word").textContent =
-        currentWord;
+    document.getElementById("word")
+        .textContent = currentWord;
 }
 
-/* =========================
-   除外
-========================= */
-
+/* 除外 */
 window.excludeWord = function(){
 
     if(currentWord === "") return;
 
-    if(currentWord === "曲がありません") return;
+    if(currentWord === "曲がありません")
+        return;
 
     excludedWords.add(currentWord);
 
@@ -212,10 +278,7 @@ window.excludeWord = function(){
     generateRandomWord();
 }
 
-/* =========================
-   戻る
-========================= */
-
+/* 戻る */
 window.goBack = function(){
 
     if(previousWord !== ""){
@@ -226,24 +289,24 @@ window.goBack = function(){
 
         currentWord = previousWord;
 
-        document.getElementById("word").textContent =
-            currentWord;
+        document.getElementById("word")
+            .textContent = currentWord;
 
     }else{
 
-        alert("一つ前の単語がありません。");
-
+        alert(
+            "一つ前の曲がありません。"
+        );
     }
 }
 
-/* =========================
-   リセット
-========================= */
-
+/* リセット */
 window.resetExcludedWords = function(){
 
     const result =
-        confirm("保存データをリセットしますか？");
+        confirm(
+            "保存データをリセットしますか？"
+        );
 
     if(result){
 
@@ -256,9 +319,6 @@ window.resetExcludedWords = function(){
         generateRandomWord();
     }
 }
-
-
-
 
 </script>
 
