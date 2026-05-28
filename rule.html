@@ -119,7 +119,42 @@ border-bottom:1px solid #eee;
 
 <div id="roulette2" class="box"></div>
 
-<script>
+<script type="module">
+
+/* =========================
+Firebase
+========================= */
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+set,
+onValue
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyCvjizg21d4M6PjkKJgEzWAy6hmyHLR8j0",
+authDomain: "proseka-roulette.firebaseapp.com",
+databaseURL: "https://proseka-roulette-default-rtdb.firebaseio.com",
+projectId: "proseka-roulette",
+storageBucket: "proseka-roulette.firebasestorage.app",
+messagingSenderId: "595448425100",
+appId: "1:595448425100:web:3db43056c3c879f73c69a9"
+
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+
+/* =========================
+項目
+========================= */
 
 const items = [
 "ビンゴ",
@@ -133,6 +168,10 @@ const items = [
 "ユニ指定",
 "点数当て＋２全ミス－５"
 ];
+
+/* =========================
+ルーレット作成
+========================= */
 
 function createRoulette(id, title){
 
@@ -181,55 +220,55 @@ id="${id}-history">
 </div>
 `;
 
-let current =
-localStorage.getItem(
-id + "-current"
-) || "";
+let current = "";
+let previous = "";
+let history = [];
 
-let previous =
-localStorage.getItem(
-id + "-previous"
-) || "";
+const excluded = new Set();
 
-const excluded =
-new Set(
-JSON.parse(
-localStorage.getItem(
-id + "-excluded"
-)
-) || []
-);
+/* Firebase参照 */
+const rouletteRef =
+ref(db, id);
 
-let history =
-JSON.parse(
-localStorage.getItem(
-id + "-history"
-)
-) || [];
+/* Firebase同期 */
+onValue(rouletteRef, (snapshot) => {
 
-function save(){
+const data = snapshot.val();
 
-localStorage.setItem(
-id + "-excluded",
-JSON.stringify([...excluded])
-);
+if(data){
 
-localStorage.setItem(
-id + "-history",
-JSON.stringify(history)
-);
+current = data.current || "";
+previous = data.previous || "";
+history = data.history || [];
 
-localStorage.setItem(
-id + "-current",
-current
-);
+excluded.clear();
 
-localStorage.setItem(
-id + "-previous",
-previous
-);
+(data.excluded || []).forEach(item => {
+excluded.add(item);
+});
+
+update(current);
+updateHistory();
+
 }
 
+});
+
+/* Firebase保存 */
+function save(){
+
+set(rouletteRef, {
+
+current: current,
+previous: previous,
+history: history,
+excluded: [...excluded]
+
+});
+
+}
+
+/* ランダム取得 */
 function getRandom(){
 
 const available =
@@ -249,15 +288,19 @@ Math.random()
 * available.length
 )
 ];
+
 }
 
+/* 表示更新 */
 function update(text){
 
 document.getElementById(
 `${id}-result`
 ).textContent = text;
+
 }
 
+/* 履歴更新 */
 function updateHistory(){
 
 const historyDiv =
@@ -283,12 +326,7 @@ item;
 historyDiv.appendChild(div);
 
 });
-}
 
-updateHistory();
-
-if(current !== ""){
-update(current);
 }
 
 return {
@@ -345,9 +383,11 @@ history.shift();
 save();
 
 updateHistory();
+
 }
 
 }, 80);
+
 },
 
 exclude(){
@@ -362,6 +402,7 @@ excluded.add(current);
 save();
 
 this.spin();
+
 },
 
 back(){
@@ -373,6 +414,7 @@ current = previous;
 update(current);
 
 save();
+
 },
 
 reset(){
@@ -392,36 +434,29 @@ current = "";
 
 previous = "";
 
-localStorage.removeItem(
-id + "-excluded"
-);
-
-localStorage.removeItem(
-id + "-history"
-);
-
-localStorage.removeItem(
-id + "-current"
-);
-
-localStorage.removeItem(
-id + "-previous"
-);
+save();
 
 update("");
 
 updateHistory();
-}
-};
+
 }
 
-const roulette1 =
+};
+
+}
+
+/* =========================
+作成
+========================= */
+
+window.roulette1 =
 createRoulette(
 "roulette1",
 "アイテムルーレット（藤）"
 );
 
-const roulette2 =
+window.roulette2 =
 createRoulette(
 "roulette2",
 "アイテムルーレット（茶）"
