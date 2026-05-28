@@ -67,7 +67,7 @@ textarea{
     color:white !important;
 }
 
-/* ★中央もビンゴで赤優先 */
+/* 中央もビンゴ優先 */
 .center.open.bingo{
     background:#ff5252 !important;
     color:white !important;
@@ -133,11 +133,18 @@ const grid = document.getElementById("grid");
 let open = [];
 let board = [];
 
+/* ======================
+   シャッフル
+====================== */
 function shuffle(a){
+
     for(let i=a.length-1;i>0;i--){
+
         let j=Math.floor(Math.random()*(i+1));
+
         [a[i],a[j]]=[a[j],a[i]];
     }
+
     return a;
 }
 
@@ -145,12 +152,20 @@ function shuffle(a){
    💾 保存
 ====================== */
 function saveGame(){
+
     localStorage.setItem("bingoSave", JSON.stringify({
+
         board,
         open,
-        input: document.getElementById("input").value,
-        centerMode: document.getElementById("centerToggle").checked,
-        centerValue: document.getElementById("centerValue").value
+
+        input:
+        document.getElementById("input").value,
+
+        centerMode:
+        document.getElementById("centerToggle").checked,
+
+        centerValue:
+        document.getElementById("centerValue").value
     }));
 }
 
@@ -159,19 +174,28 @@ function saveGame(){
 ====================== */
 function loadGame(){
 
-    const saved = localStorage.getItem("bingoSave");
+    const saved =
+    localStorage.getItem("bingoSave");
+
     if(!saved) return;
 
     const data = JSON.parse(saved);
 
-    document.getElementById("input").value = data.input || "";
-    document.getElementById("centerToggle").checked = data.centerMode || false;
-    document.getElementById("centerValue").value = data.centerValue || "";
+    document.getElementById("input").value =
+    data.input || "";
+
+    document.getElementById("centerToggle").checked =
+    data.centerMode || false;
+
+    document.getElementById("centerValue").value =
+    data.centerValue || "";
 
     board = data.board || [];
+
     open = data.open || [];
 
     if(board.length){
+
         render();
     }
 }
@@ -183,18 +207,23 @@ function render(){
 
     grid.innerHTML = "";
 
-    const centerMode = document.getElementById("centerToggle").checked;
+    const centerMode =
+    document.getElementById("centerToggle").checked;
 
     board.forEach((v,i)=>{
 
-        const cell = document.createElement("div");
+        const cell =
+        document.createElement("div");
+
         cell.className = "cell";
 
         if(centerMode && i===4){
+
             cell.classList.add("center");
         }
 
         if(open.includes(i)){
+
             cell.classList.add("open");
         }
 
@@ -203,13 +232,18 @@ function render(){
         cell.addEventListener("click",()=>{
 
             if(open.includes(i)){
+
                 open = open.filter(x=>x!==i);
+
             }else{
+
                 open.push(i);
             }
 
             saveGame();
+
             check();
+
             render();
         });
 
@@ -224,43 +258,78 @@ function render(){
 ====================== */
 function generate(){
 
-    let items = document.getElementById("input").value
+    let items =
+    document.getElementById("input").value
     .split("\n")
     .map(v=>v.trim())
     .filter(v=>v!=="");
 
-    const centerMode = document.getElementById("centerToggle").checked;
-    const centerValue = document.getElementById("centerValue").value;
+    const centerMode =
+    document.getElementById("centerToggle").checked;
+
+    const centerValue =
+    document.getElementById("centerValue").value;
 
     let pool = [];
-    for(let i=0;i<40;i++) pool = pool.concat(items);
 
-    items = shuffle(items);
+    for(let i=0;i<40;i++){
 
-    const selected = centerMode
-    ? items.concat(items).slice(0,8)
-    : items.concat(items).slice(0,9);
+        pool = pool.concat(items);
+    }
+
+    /* 🔥 完全ランダム */
+    let selected = [];
+
+    const count =
+    centerMode ? 8 : 9;
+
+    for(let i=0;i<count;i++){
+
+        selected.push(
+
+            items[
+                Math.floor(
+                    Math.random() * items.length
+                )
+            ]
+        );
+    }
 
     board = centerMode ?
+
     [
-        selected[0],selected[1],selected[2],
-        selected[3],centerValue,selected[4],
-        selected[5],selected[6],selected[7]
+        selected[0],
+        selected[1],
+        selected[2],
+
+        selected[3],
+        centerValue,
+        selected[4],
+
+        selected[5],
+        selected[6],
+        selected[7]
     ]
+
     : selected;
 
     open = [];
 
     grid.innerHTML = "";
+
     document.getElementById("bingoText").textContent = "";
+
     document.getElementById("bingoCount").textContent = "";
 
     board.forEach((v,i)=>{
 
-        const cell = document.createElement("div");
+        const cell =
+        document.createElement("div");
+
         cell.className = "cell";
 
         if(centerMode && i===4){
+
             cell.classList.add("center");
         }
 
@@ -268,20 +337,30 @@ function generate(){
 
         let count = 0;
 
-        const interval = setInterval(()=>{
+        const interval =
+        setInterval(()=>{
 
             if(centerMode && i===4){
+
                 cell.textContent = centerValue;
+
                 return;
             }
 
             cell.textContent =
-            pool[Math.floor(Math.random()*pool.length)];
+
+            pool[
+                Math.floor(
+                    Math.random()*pool.length
+                )
+            ];
 
             count++;
 
             if(count > 30 + i*3){
+
                 clearInterval(interval);
+
                 cell.textContent = v;
             }
 
@@ -290,36 +369,53 @@ function generate(){
         cell.addEventListener("click",()=>{
 
             if(open.includes(i)){
-                open = open.filter(x=>x!==i);
+
+                open =
+                open.filter(x=>x!==i);
+
             }else{
+
                 open.push(i);
             }
 
             saveGame();
+
             check();
+
             render();
         });
 
     });
 
     saveGame();
+
     check();
 }
 
 /* ======================
-   🟩 ビンゴ判定（中央もOK）
+   🟩 ビンゴ判定
 ====================== */
 function check(){
 
     const lines = [
-        [0,1,2],[3,4,5],[6,7,8],
-        [0,3,6],[1,4,7],[2,5,8],
-        [0,4,8],[2,4,6]
+
+        [0,1,2],
+        [3,4,5],
+        [6,7,8],
+
+        [0,3,6],
+        [1,4,7],
+        [2,5,8],
+
+        [0,4,8],
+        [2,4,6]
     ];
 
-    const cells = document.querySelectorAll(".cell");
+    const cells =
+    document.querySelectorAll(".cell");
 
     cells.forEach(c=>{
+
         c.classList.remove("bingo");
     });
 
@@ -328,21 +424,27 @@ function check(){
     lines.forEach(line=>{
 
         if(line.every(i=>open.includes(i))){
+
             bingo++;
 
             line.forEach(i=>{
+
                 const cell = cells[i];
+
                 cell.classList.add("bingo");
+
                 cell.classList.add("open");
             });
         }
     });
 
     document.getElementById("bingoText")
-    .textContent = bingo ? "BINGO！" : "";
+    .textContent =
+    bingo ? "BINGO！" : "";
 
     document.getElementById("bingoCount")
-    .textContent = "ビンゴ数：" + bingo;
+    .textContent =
+    "ビンゴ数：" + bingo;
 
     saveGame();
 }
@@ -355,11 +457,13 @@ function resetGame(){
     localStorage.removeItem("bingoSave");
 
     open = [];
+
     board = [];
 
     grid.innerHTML = "";
 
     document.getElementById("bingoText").textContent = "";
+
     document.getElementById("bingoCount").textContent = "";
 }
 
