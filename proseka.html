@@ -15,156 +15,97 @@
 
 <style>
 
-*{
-    box-sizing:border-box;
-    -webkit-tap-highlight-color:transparent;
-}
-
 html,
 body{
-    margin:0;
-    padding:0;
-    width:100%;
-    min-height:100vh;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+
+    touch-action: manipulation;
+
+    font-family: sans-serif;
+    background: #f5f5f5;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
 }
 
-body{
-    background:#111;
-    color:white;
-
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-
-    font-family:sans-serif;
-
-    text-align:center;
-
-    padding:20px;
-
-    touch-action:manipulation;
-}
-
-/* ダブルタップ拡大防止 */
-button,
-#word{
-    touch-action:manipulation;
-}
-
+/* タイトル */
 h1{
-    font-size:40px;
-    margin-bottom:40px;
+    font-size: 36px;
+    margin-bottom: 30px;
 }
 
+/* 曲名 */
 #word{
+    font-size: 32px;
+    font-weight: bold;
 
-    width:100%;
-    max-width:900px;
+    margin: 30px 20px;
 
-    min-height:180px;
+    line-height: 1.4;
 
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    padding:30px;
-
-    border-radius:25px;
-
-    background:#222;
-
-    font-size:48px;
-    font-weight:bold;
-    line-height:1.4;
-
-    word-break:break-word;
-
-    margin-bottom:35px;
+    word-break: break-word;
 }
 
-.buttons{
-
-    width:100%;
-    max-width:900px;
-
-    display:grid;
-
-    grid-template-columns:
-        repeat(2,1fr);
-
-    gap:20px;
-}
-
+/* ボタン */
 button{
 
-    border:none;
+    width: 85%;
+    max-width: 500px;
 
-    border-radius:20px;
+    font-size: 24px;
 
-    padding:28px 20px;
+    padding: 18px;
 
-    font-size:28px;
-    font-weight:bold;
+    margin: 10px;
 
-    cursor:pointer;
+    border: none;
+    border-radius: 18px;
 
-    background:#00bcd4;
-    color:white;
+    background: #00bcd4;
+    color: white;
 
-    transition:0.15s;
+    font-weight: bold;
+
+    touch-action: manipulation;
 }
 
+/* 押した時 */
 button:active{
-    transform:scale(0.96);
-}
-
-@media (max-width:700px){
-
-    h1{
-        font-size:28px;
-    }
-
-    #word{
-        font-size:32px;
-        min-height:140px;
-        padding:24px;
-    }
-
-    button{
-        font-size:22px;
-        padding:22px 14px;
-    }
+    transform: scale(0.98);
 }
 
 </style>
+
 </head>
 
 <body>
 
 <h1>プロセカルーレット</h1>
 
-<div id="word">読み込み中...</div>
-
-<div class="buttons">
+<p id="word">読み込み中...</p>
 
 <button onclick="generateRandomWord()">
-まわす
+    まわす
 </button>
 
 <button onclick="excludeWord()">
-今後表示しない
+    今後表示しない
 </button>
 
 <button onclick="goBack()">
-一つ前に戻る
+    一つ前に戻る
 </button>
 
 <button onclick="resetExcludedWords()">
-保存リセット
+    保存リセット
 </button>
-
-</div>
 
 <script type="module">
 
