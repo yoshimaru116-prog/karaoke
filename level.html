@@ -2,50 +2,166 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-  <meta name="viewport"
-content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <title>プロセカルーレット</title>
 </head>
+
 <body>
+
     <h1>レベル指定</h1>
+
     <p id="word"></p>
-    <button onclick="generateRandomWord()">まわす</button>
-    
 
-    <script>
-    var array=new Array("const words",)    
-        const words = ["２６以下","２７","２８","２９","３０","３１","３２以上"];
-        let currentWord;
-        const excludedWords = new Set();
-        const previousWords = [];
+    <button onclick="generateRandomWord()">
+        まわす
+    </button>
 
-        function getRandomWord() {
-            const availableWords = words.filter(word => !excludedWords.has(word));
-            return availableWords[Math.floor(Math.random() * availableWords.length)];
-        }
+<script type="module">
 
-        function generateRandomWord() {
-            currentWord = getRandomWord();
-            document.getElementById("word").textContent = currentWord;
-        }
+/* =========================
+Firebase
+========================= */
 
-        function excludeWord() {
-            excludedWords.add(currentWord);
-            previousWords.push(currentWord);
-            generateRandomWord();
-        }
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-        function goBack() {
-            if (previousWords.length > 0) {
-                excludedWords.delete(previousWords.pop());
-                generateRandomWord();
-            } else {
-                alert("一つ前の単語がありません。");
-            }
-        }
+import {
+    getDatabase,
+    ref,
+    set,
+    onValue
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-        // 初期の単語を表示
+/* Firebase設定 */
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyCvjizg21d4M6PjkKJgEzWAy6hmyHLR8j0",
+  authDomain: "proseka-roulette.firebaseapp.com",
+  databaseURL: "https://proseka-roulette-default-rtdb.firebaseio.com",
+  projectId: "proseka-roulette",
+  storageBucket: "proseka-roulette.firebasestorage.app",
+  messagingSenderId: "595448425100",
+  appId: "1:595448425100:web:3db43056c3c879f73c69a9"
+
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+
+/* =========================
+元のコード
+========================= */
+
+const words = [
+    "２６以下",
+    "２７",
+    "２８",
+    "２９",
+    "３０",
+    "３１",
+    "３２以上"
+];
+
+let currentWord;
+
+const excludedWords = new Set();
+
+const previousWords = [];
+
+/* Firebase保存先 */
+
+const currentWordRef =
+    ref(db,"levelCurrentWord");
+
+/* Firebase同期 */
+
+onValue(currentWordRef,(snapshot)=>{
+
+    const data = snapshot.val();
+
+    if(data){
+
+        currentWord = data;
+
+        document
+        .getElementById("word")
+        .textContent =
+        currentWord;
+
+    }else{
+
         generateRandomWord();
-    </script>
+    }
+});
+
+function getRandomWord() {
+
+    const availableWords =
+        words.filter(
+            word =>
+            !excludedWords.has(word)
+        );
+
+    return availableWords[
+        Math.floor(
+            Math.random()
+            * availableWords.length
+        )
+    ];
+}
+
+window.generateRandomWord =
+function() {
+
+    currentWord =
+        getRandomWord();
+
+    document
+    .getElementById("word")
+    .textContent =
+    currentWord;
+
+    /* Firebase保存 */
+
+    set(
+        currentWordRef,
+        currentWord
+    );
+}
+
+function excludeWord() {
+
+    excludedWords.add(currentWord);
+
+    previousWords.push(currentWord);
+
+    generateRandomWord();
+}
+
+function goBack() {
+
+    if (previousWords.length > 0) {
+
+        excludedWords.delete(
+            previousWords.pop()
+        );
+
+        generateRandomWord();
+
+    } else {
+
+        alert(
+        "一つ前の単語がありません。"
+        );
+    }
+}
+
+</script>
+
 </body>
 </html>
