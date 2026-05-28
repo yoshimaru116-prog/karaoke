@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <title>ユニットルーレット</title>
 
@@ -13,6 +14,7 @@ body{
     background: #f5f5f5;
     text-align: center;
     padding: 20px;
+    touch-action: manipulation;
 }
 
 h1{
@@ -118,11 +120,47 @@ button{
 
 </div>
 
-<script>
+<!-- Firebase -->
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getDatabase,
+    ref,
+    set,
+    onValue
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 /* ======================
-   スロット演出関数
+   Firebase設定
 ====================== */
+
+const firebaseConfig = {
+
+   apiKey: "AIzaSyCvjizg21d4M6PjkKJgEzWAy6hmyHLR8j0",
+   authDomain: "proseka-roulette.firebaseapp.com",
+   databaseURL: "https://proseka-roulette-default-rtdb.firebaseio.com",
+   projectId: "proseka-roulette",
+   storageBucket: "proseka-roulette.firebasestorage.app",
+   messagingSenderId: "595448425100",
+   appId: "1:595448425100:web:3db43056c3c879f73c69a9"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* ======================
+   Firebase参照
+====================== */
+
+const history1Ref = ref(db, "unitroulette/history1");
+const history2Ref = ref(db, "unitroulette/history2");
+
+/* ======================
+   スロット演出
+====================== */
+
 function slotEffect(el, finalValue, pool, duration = 1200){
 
     let start = Date.now();
@@ -151,27 +189,45 @@ function slotEffect(el, finalValue, pool, duration = 1200){
 /* ======================
    履歴
 ====================== */
-let history1 =
-    JSON.parse(localStorage.getItem("history1")) || [];
 
-let history2 =
-    JSON.parse(localStorage.getItem("history2")) || [];
+let history1 = [];
+let history2 = [];
+
+/* ======================
+   Firebase同期
+====================== */
+
+onValue(history1Ref, (snapshot)=>{
+
+    history1 = snapshot.val() || [];
+
+    displayHistory1();
+});
+
+onValue(history2Ref, (snapshot)=>{
+
+    history2 = snapshot.val() || [];
+
+    displayHistory2();
+});
 
 /* ======================
    データ
 ====================== */
+
 const words = [
-    "バチャシン", "バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン","バチャシン",
-    "モアジャン","モアジャン","モアジャン","モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン", "モアジャン",
-    "レオ二", "レオ二", "レオ二", "レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二","レオ二",
-    "ビビバス", "ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス","ビビバス",
-    "ワンダショ", "ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ","ワンダショ",
-    "ニーゴ", "ニーゴ","ニーゴ","ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ", "ニーゴ",
+    "バチャシン",
+    "モアジャン",
+    "レオ二",
+    "ビビバス",
+    "ワンダショ",
+    "ニーゴ"
 ];
 
 /* ======================
    ランダム2つ
 ====================== */
+
 function getRandomPair(array){
 
     let a = Math.floor(Math.random() * array.length);
@@ -187,7 +243,8 @@ function getRandomPair(array){
 /* ======================
    1つ目
 ====================== */
-function spin1(){
+
+window.spin1 = function(){
 
     const result = getRandomPair(words);
 
@@ -196,33 +253,37 @@ function spin1(){
 
     history1.unshift(result[0] + " ＆ " + result[1]);
 
-    localStorage.setItem("history1", JSON.stringify(history1));
-
-    setTimeout(displayHistory1, 1300);
+    set(history1Ref, history1);
 }
 
 function displayHistory1(){
 
     const ul = document.getElementById("history1");
+
     ul.innerHTML = "";
 
     history1.forEach(item=>{
+
         const li = document.createElement("li");
+
         li.textContent = item;
+
         ul.appendChild(li);
     });
 }
 
-function clearHistory1(){
+window.clearHistory1 = function(){
+
     history1 = [];
-    localStorage.removeItem("history1");
-    displayHistory1();
+
+    set(history1Ref, []);
 }
 
 /* ======================
    2つ目
 ====================== */
-function spin2(){
+
+window.spin2 = function(){
 
     const result = getRandomPair(words);
 
@@ -231,34 +292,31 @@ function spin2(){
 
     history2.unshift(result[0] + " ＆ " + result[1]);
 
-    localStorage.setItem("history2", JSON.stringify(history2));
-
-    setTimeout(displayHistory2, 1300);
+    set(history2Ref, history2);
 }
 
 function displayHistory2(){
 
     const ul = document.getElementById("history2");
+
     ul.innerHTML = "";
 
     history2.forEach(item=>{
+
         const li = document.createElement("li");
+
         li.textContent = item;
+
         ul.appendChild(li);
     });
 }
 
-function clearHistory2(){
-    history2 = [];
-    localStorage.removeItem("history2");
-    displayHistory2();
-}
+window.clearHistory2 = function(){
 
-/* ======================
-   初期表示
-====================== */
-displayHistory1();
-displayHistory2();
+    history2 = [];
+
+    set(history2Ref, []);
+}
 
 </script>
 
