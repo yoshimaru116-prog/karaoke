@@ -8,12 +8,17 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
 <title>スコア管理 完全版</title>
 
 <style>
+
 body{
-    font-family: sans-serif;
-    text-align: center;
-    background: #f0f0f0;
-    padding: 15px;
-    touch-action: manipulation;
+    font-family:sans-serif;
+    text-align:center;
+    background:#f0f0f0;
+    padding:15px;
+    touch-action:manipulation;
+}
+
+h1{
+    font-size:28px;
 }
 
 #top{
@@ -27,7 +32,8 @@ body{
 
 .container{
     display:flex;
-    justify-content: space-around;
+    justify-content:space-around;
+    gap:10px;
 }
 
 .player{
@@ -39,21 +45,30 @@ body{
 
 .score{
     font-size:40px;
+    font-weight:bold;
 }
 
 button{
     width:100%;
-    padding:8px;
+    padding:10px;
     margin:4px 0;
     border:none;
     border-radius:6px;
-    font-size:14px;
+    font-size:15px;
 }
 
-.plus{ background:#4caf50; color:white; }
-.minus{ background:#f44336; color:white; }
+.plus{
+    background:#4caf50;
+    color:white;
+}
 
-.log, .history{
+.minus{
+    background:#f44336;
+    color:white;
+}
+
+.log,
+.history{
     background:white;
     margin-top:10px;
     padding:10px;
@@ -61,6 +76,7 @@ button{
     height:140px;
     overflow:auto;
     font-size:13px;
+    border-radius:10px;
 }
 
 .control{
@@ -75,10 +91,16 @@ button{
     border:none;
     border-radius:6px;
     color:white;
+    font-size:15px;
 }
 
-.next{ background:#333; }
-.reset{ background:#f44336; }
+.next{
+    background:#333;
+}
+
+.reset{
+    background:#f44336;
+}
 
 </style>
 </head>
@@ -87,237 +109,458 @@ button{
 
 <h1>スコア管理</h1>
 
-<!-- 🔥 総合計（全部の合計） -->
 <div id="top">
-合計（総合）：<span id="total">0 - 0</span><br>
-点差：<span id="diff">0</span><br>
-セット：<span id="setInfo">1</span>
+
+合計（総合）：
+<span id="total">0 - 0</span>
+
+<br>
+
+点差：
+<span id="diff">0</span>
+
+<br>
+
+セット：
+<span id="setInfo">1</span>
+
 </div>
 
 <div class="container">
 
 <div class="player">
+
 <h3>P1</h3>
+
 <div class="score" id="s1">0</div>
 
-<button class="plus" onclick="add(1,1,'＋1')">＋1</button>
-<button class="plus" onclick="add(1,2,'＋2')">＋2</button>
-<button class="plus" onclick="add(1,3,'＋3')">＋3</button>
-<button class="plus" onclick="add(1,5,'＋5')">＋5</button>
-<button class="minus" onclick="add(1,-1,'−1')">−1</button>
+<button class="plus"
+onclick="add(1,1,'＋1')">
+＋1
+</button>
+
+<button class="plus"
+onclick="add(1,2,'＋2')">
+＋2
+</button>
+
+<button class="plus"
+onclick="add(1,3,'＋3')">
+＋3
+</button>
+
+<button class="plus"
+onclick="add(1,5,'＋5')">
+＋5
+</button>
+
+<button class="minus"
+onclick="add(1,-1,'−1')">
+−1
+</button>
+
 </div>
 
 <div class="player">
+
 <h3>P2</h3>
+
 <div class="score" id="s2">0</div>
 
-<button class="plus" onclick="add(2,1,'＋1')">＋1</button>
-<button class="plus" onclick="add(2,2,'＋2')">＋2</button>
-<button class="plus" onclick="add(2,3,'＋3')">＋3</button>
-<button class="plus" onclick="add(2,5,'＋5')">＋5</button>
-<button class="minus" onclick="add(2,-1,'−1')">−1</button>
+<button class="plus"
+onclick="add(2,1,'＋1')">
+＋1
+</button>
+
+<button class="plus"
+onclick="add(2,2,'＋2')">
+＋2
+</button>
+
+<button class="plus"
+onclick="add(2,3,'＋3')">
+＋3
+</button>
+
+<button class="plus"
+onclick="add(2,5,'＋5')">
+＋5
+</button>
+
+<button class="minus"
+onclick="add(2,-1,'−1')">
+−1
+</button>
+
 </div>
 
 </div>
 
 <div class="control">
-<button class="ctrlbtn next" onclick="nextSet()">次のセット</button>
-<button class="ctrlbtn reset" onclick="resetAll()">リセット</button>
+
+<button class="ctrlbtn next"
+onclick="nextSet()">
+次のセット
+</button>
+
+<button class="ctrlbtn reset"
+onclick="resetAll()">
+リセット
+</button>
+
 </div>
 
 <h3>セット履歴</h3>
-<div id="history" class="history"></div>
+
+<div id="history"
+class="history">
+</div>
 
 <h3>実況ログ</h3>
-<div class="log" id="log"></div>
 
-<script>
+<div class="log"
+id="log">
+</div>
+
+<script type="module">
+
+/* =========================
+Firebase
+========================= */
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+set,
+onValue
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyCvjizg21d4M6PjkKJgEzWAy6hmyHLR8j0",
+authDomain: "proseka-roulette.firebaseapp.com",
+databaseURL: "https://proseka-roulette-default-rtdb.firebaseio.com",
+projectId: "proseka-roulette",
+storageBucket: "proseka-roulette.firebasestorage.app",
+messagingSenderId: "595448425100",
+appId: "1:595448425100:web:3db43056c3c879f73c69a9"
+
+};
+
+/* Firebase開始 */
+
+const app =
+initializeApp(firebaseConfig);
+
+const db =
+getDatabase(app);
+
+const scoreRef =
+ref(db, "scoreData");
+
+/* =========================
+データ
+========================= */
 
 let p1 = 0;
 let p2 = 0;
 
 let sets = [];
+
 let setNum = 1;
 
 let dirty = false;
 
-/* ------------------------
-   🔥 総合計計算
------------------------- */
-function getTotal(){
+/* =========================
+Firebase同期
+========================= */
 
-    let totalP1 = p1;
-    let totalP2 = p2;
+onValue(scoreRef, (snapshot) => {
 
-    sets.forEach(s => {
-        totalP1 += s.p1;
-        totalP2 += s.p2;
-    });
+const data = snapshot.val();
 
-    return { totalP1, totalP2 };
+if(!data){
+
+render();
+return;
+
 }
 
-/* ------------------------
-   🔥 加点
------------------------- */
-function add(player, point, label){
+p1 = data.p1 || 0;
+p2 = data.p2 || 0;
 
-    if(player === 1){
-        p1 += point;
-        if(p1 < 0) p1 = 0;
-    } else {
-        p2 += point;
-        if(p2 < 0) p2 = 0;
-    }
+sets = data.sets || [];
 
-    log(player, label);
+setNum = data.setNum || 1;
 
-    dirty = true;
-    autoSave();
-}
+document.getElementById("log").innerHTML =
+data.log || "";
 
-/* ------------------------
-   🔥 ログ
------------------------- */
-function log(player, text){
+render();
+renderHistory();
 
-    const div = document.getElementById("log");
-    const time = new Date().toLocaleTimeString();
+});
 
-    div.insertAdjacentHTML(
-        "beforeend",
-        `[${time}] P${player}: ${text}<br>`
-    );
+/* =========================
+Firebase保存
+========================= */
 
-    div.scrollTop = div.scrollHeight;
-}
-
-/* ------------------------
-   🔥 画面更新（総合計ここ重要）
------------------------- */
-function render(){
-
-    document.getElementById("s1").innerText = p1;
-    document.getElementById("s2").innerText = p2;
-
-    const t = getTotal(); // 🔥全部の合計
-
-    document.getElementById("total").innerText =
-        `${t.totalP1} - ${t.totalP2}`;
-
-    let diff = t.totalP1 - t.totalP2;
-
-    document.getElementById("diff").innerText =
-        Math.abs(diff) +
-        (diff > 0 ? " (P1)" : diff < 0 ? " (P2)" : " (同点)");
-
-    document.getElementById("setInfo").innerText = setNum;
-
-    dirty = false;
-}
-
-/* ------------------------
-   🔥 セット切替
------------------------- */
-function nextSet(){
-
-    sets.push({
-        set: setNum,
-        p1,
-        p2
-    });
-
-    p1 = 0;
-    p2 = 0;
-    setNum++;
-
-    log(1, "次のセット");
-
-    renderHistory();
-    autoSave();
-    render();
-}
-
-/* ------------------------
-   🔥 リセット
------------------------- */
-function resetAll(){
-
-    if(!confirm("試合データをすべて削除しますか？")) return;
-
-    p1 = 0;
-    p2 = 0;
-    sets = [];
-    setNum = 1;
-
-    document.getElementById("log").innerHTML = "";
-    document.getElementById("history").innerHTML = "";
-
-    localStorage.removeItem("autoscore_final_total");
-
-    log(1, "全リセット");
-
-    render();
-}
-
-/* ------------------------
-   🔥 セット履歴表示
------------------------- */
-function renderHistory(){
-
-    let html = "";
-
-    sets.forEach(s => {
-        html += `セット${s.set}：P1 ${s.p1} - P2 ${s.p2}<br>`;
-    });
-
-    document.getElementById("history").innerHTML = html;
-}
-
-/* ------------------------
-   🔥 自動保存
------------------------- */
 function autoSave(){
 
-    const data = {
-        p1,
-        p2,
-        sets,
-        setNum,
-        log: document.getElementById("log").innerHTML
-    };
+set(scoreRef, {
 
-    localStorage.setItem("autoscore_final_total", JSON.stringify(data));
+p1,
+p2,
+sets,
+setNum,
+
+log:
+document.getElementById("log").innerHTML
+
+});
+
 }
 
-/* ------------------------
-   🔥 復元
------------------------- */
-window.onload = function(){
+/* =========================
+総合計
+========================= */
 
-    const data = JSON.parse(localStorage.getItem("autoscore_final_total"));
+function getTotal(){
 
-    if(!data){
-        render();
-        return;
-    }
+let totalP1 = p1;
+let totalP2 = p2;
 
-    p1 = data.p1 || 0;
-    p2 = data.p2 || 0;
-    sets = data.sets || [];
-    setNum = data.setNum || 1;
+sets.forEach(s => {
 
-    document.getElementById("log").innerHTML = data.log || "";
+totalP1 += s.p1;
+totalP2 += s.p2;
 
-    render();
-    renderHistory();
+});
+
+return {
+
+totalP1,
+totalP2
+
 };
 
-/* ------------------------
-   🔥 高速更新
------------------------- */
+}
+
+/* =========================
+加点
+========================= */
+
+window.add = function(
+player,
+point,
+label
+){
+
+if(player === 1){
+
+p1 += point;
+
+if(p1 < 0){
+
+p1 = 0;
+
+}
+
+}else{
+
+p2 += point;
+
+if(p2 < 0){
+
+p2 = 0;
+
+}
+
+}
+
+log(player, label);
+
+dirty = true;
+
+autoSave();
+
+}
+
+/* =========================
+ログ
+========================= */
+
+function log(player, text){
+
+const div =
+document.getElementById("log");
+
+const time =
+new Date().toLocaleTimeString();
+
+div.insertAdjacentHTML(
+
+"beforeend",
+
+`[${time}] P${player}: ${text}<br>`
+
+);
+
+div.scrollTop =
+div.scrollHeight;
+
+}
+
+/* =========================
+画面更新
+========================= */
+
+function render(){
+
+document.getElementById("s1").innerText =
+p1;
+
+document.getElementById("s2").innerText =
+p2;
+
+const t =
+getTotal();
+
+document.getElementById("total").innerText =
+
+`${t.totalP1} - ${t.totalP2}`;
+
+let diff =
+t.totalP1 - t.totalP2;
+
+document.getElementById("diff").innerText =
+
+Math.abs(diff)
+
++
+
+(diff > 0
+? " (P1)"
+: diff < 0
+? " (P2)"
+: " (同点)");
+
+document.getElementById("setInfo").innerText =
+setNum;
+
+dirty = false;
+
+}
+
+/* =========================
+次セット
+========================= */
+
+window.nextSet = function(){
+
+sets.push({
+
+set: setNum,
+p1,
+p2
+
+});
+
+p1 = 0;
+p2 = 0;
+
+setNum++;
+
+log(1, "次のセット");
+
+renderHistory();
+
+autoSave();
+
+render();
+
+}
+
+/* =========================
+リセット
+========================= */
+
+window.resetAll = function(){
+
+const result =
+confirm(
+"試合データをすべて削除しますか？"
+);
+
+if(!result) return;
+
+p1 = 0;
+p2 = 0;
+
+sets = [];
+
+setNum = 1;
+
+document.getElementById("log").innerHTML =
+"";
+
+document.getElementById("history").innerHTML =
+"";
+
+autoSave();
+
+log(1, "全リセット");
+
+render();
+
+}
+
+/* =========================
+履歴表示
+========================= */
+
+function renderHistory(){
+
+let html = "";
+
+sets.forEach(s => {
+
+html +=
+
+`セット${s.set}：
+P1 ${s.p1}
+-
+P2 ${s.p2}<br>`;
+
+});
+
+document.getElementById("history").innerHTML =
+html;
+
+}
+
+/* =========================
+初期表示
+========================= */
+
+render();
+
+/* =========================
+高速更新
+========================= */
+
 setInterval(() => {
-    if(dirty) render();
+
+if(dirty){
+
+render();
+
+}
+
 }, 50);
 
 </script>
