@@ -25,10 +25,8 @@
     </button>
 
     <button onclick="resetExcludedWords()">
-        保存リセット
-    </button>
-
-
+    保存リセット
+</button>
 
 <!-- Firebase -->
 <script type="module">
@@ -114,6 +112,7 @@ let excludedWords = new Set();
 const excludedRef = ref(db, "excludedWords");
 
 /* 他の人が変更したら自動反映 */
+/* 他の人が変更したら自動反映 */
 onValue(excludedRef, (snapshot) => {
 
     const data = snapshot.val();
@@ -127,6 +126,10 @@ onValue(excludedRef, (snapshot) => {
         excludedWords = new Set();
 
     }
+
+    /* 初期表示 */
+    generateRandomWord();
+
 });
 
 /* Firebase保存 */
@@ -239,11 +242,8 @@ window.resetExcludedWords = function(){
     }
 }
 
-/* =========================
-   初期表示
-========================= */
 
-generateRandomWord();
+
 
 </script>
 
