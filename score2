@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>対戦スコア管理システム</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+<style>
+body{
+    font-family:sans-serif;
+    background:white;
+    color:black;
+    text-align:center;
+    padding:15px;
+}
+
+.card{
+    background:#f3f4f6;
+    padding:15px;
+    border-radius:12px;
+    margin:10px auto;
+    max-width:650px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+.row{
+    display:flex;
+    justify-content:center;
+    gap:5px;
+    margin:5px;
+}
+
+input{
+    width:60px;
+    text-align:center;
+    font-size:16px;
+}
+
+button{
+    padding:6px 10px;
+    border-radius:8px;
+    border:none;
+    background:#2563eb;
+    color:white;
+    cursor:pointer;
+}
+
+#ranking{
+    text-align:left;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🎮 対戦スコアシステム</h2>
+
+<label>
+<input type="checkbox" id="mode8" onchange="createInputs();updateScore();">
+8回モード
+</label>
+
+<div class="card">
+<h3>P1</h3>
+<div id="p1box"></div>
+
+<h3>P2</h3>
+<div id="p2box"></div>
+</div>
+
+<button onclick="updateScore()">再計算</button>
+
+<div class="card" id="score"></div>
+
+<!-- 調整 -->
+<div class="card">
+<h3>⚙ スコア調整</h3>
+<button onclick="adjustScore(1,1)">P1 +1</button>
+<button onclick="adjustScore(1,-1)">P1 -1</button>
+<button onclick="adjustScore(2,1)">P2 +1</button>
+<button onclick="adjustScore(2,-1)">P2 -1</button>
+</div>
+
+<!-- リセット -->
+<div class="card">
+<h3>🔄 リセット</h3>
+<button onclick="resetGame()">完全リセット</button>
+</div>
+
+<div class="card" id="ranking"></div>
+
+<script>
+
+/* ================= Firebase ================= */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCvjizg21d4M6PjkKJgEzWAy6hmyHLR8j0",
+  authDomain: "proseka-roulette.firebaseapp.com",
+  databaseURL: "https://proseka-roulette-default-rtdb.firebaseio.com",
+  projectId: "proseka-roulette",
+  storageBucket: "proseka-roulette.firebasestorage.app",
+  messagingSenderId: "595448425100",
+  appId: "1:595448425100:web:3db43056c3c879f73c69a9"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let roomId = prompt("ルームID");
+let roomRef = db.ref("rooms/" + roomId);
+
+/* ================= UI ================= */
+
+function createInputs(){
+
+    const is8 = document.getElementById("mode8").checked;
+    const count = is8 ? 8 : 7;
+
+    let p1="", p2="";
+
+    for(let i=0;i<count;i++){
+
+        p1 += `
+        <div class="row">
+            <button onclick="change('p1_${i}',1)">＋</button>
+            <button onclick="change('p1_${i}',-1)">−</button>
+            <input id="p1_${i}" type="number" value="0" oninput="updateScore()">
+        </div>`;
+
+        p2 += `
+        <div class="row">
+            <button onclick="change('p2_${i}',1)">＋</button>
+            <button onclick="change('p2_${i}',-1)">−</button>
+            <input id="p2_${i}" type="number" value="0" oninput="updateScore()">
+        </div>`;
+    }
+
+    document.getElementById("p1box").innerHTML = p1;
+    document.getElementById("p2box").innerHTML = p2;
+}
+
+function change(id,val){
+    document.getElementById(id).value =
+    Number(document.getElementById(id).value)+val;
+
+    updateScore();
+}
+
+/* ================= 計算 ================= */
+
+function calculateScore(){
+
+    const is8 = document.getElementById("mode8").checked;
+    const count = is8 ? 8 : 7;
+
+    let score1=0, score2=0;
+    let streak1=0, streak2=0;
+    let over85_1=0, over85_2=0;
+    let bonus90=0;
+
+    for(let i=0;i<count;i++){
+
+        let p1=Number(document.getElementById(`p1_${i}`).value);
+        let p2=Number(document.getElementById(`p2_${i}`).value);
+
+        if(p1>p2){ streak1++; streak2=0; }
+        else if(p2>p1){ streak2++; streak1=0; }
+
+        if(streak1===3) score1+=1;
+        if(streak1===5) score1+=2;
+        if(streak1===8) score1+=3;
+        if(streak1===10) score1+=5;
+
+        if(streak2===3) score2+=1;
+        if(streak2===5) score2+=2;
+        if(streak2===8) score2+=3;
+        if(streak2===10) score2+=5;
+
+        over85_1 = p1>=85 ? over85_1+1 : 0;
+        over85_2 = p2>=85 ? over85_2+1 : 0;
+
+        if(over85_1>=3){ score1+=3; over85_1=0; }
+        if(over85_2>=3){ score2+=3; over85_2=0; }
+
+        if(bonus90===0){
+            if(p1>=90 && p1>p2){ score1+=5; bonus90=1; }
+            if(p2>=90 && p2>p1){ score2+=5; bonus90=2; }
+        }
+    }
+
+    return {score1,score2};
+}
+
+/* ================= 更新 ================= */
+
+function updateScore(){
+
+    const r = calculateScore();
+
+    roomRef.child("result").set(r);
+
+    document.getElementById("score").innerHTML =
+    `🔥 P1: ${r.score1} / P2: ${r.score2}`;
+
+    updateTotal();
+}
+
+/* ================= 合計 ================= */
+
+function updateTotal(){
+
+    roomRef.child("sets").once("value", snap => {
+
+        const data = snap.val() || {};
+
+        let total1=0, total2=0;
+
+        Object.values(data).forEach(s=>{
+            total1 += s.p1;
+            total2 += s.p2;
+        });
+
+        roomRef.child("total").set({total1,total2});
+
+        document.getElementById("score").innerHTML =
+        `🔥 合計 P1: ${total1} / P2: ${total2}`;
+    });
+}
+
+/* ================= セット保存 ================= */
+
+let setCount=0;
+
+function saveSet(s1,s2){
+
+    setCount++;
+
+    roomRef.child("sets/set"+setCount).set({
+        p1:s1,
+        p2:s2
+    });
+}
+
+/* ================= スコア更新後 ================= */
+
+function updateScore(){
+
+    const r = calculateScore();
+
+    roomRef.child("current").set(r);
+
+    saveSet(r.score1,r.score2);
+
+    document.getElementById("score").innerHTML =
+    `🔥 P1: ${r.score1} / P2: ${r.score2}`;
+}
+
+/* ================= 調整 ================= */
+
+function adjustScore(player,val){
+
+    roomRef.child("total").transaction(d=>{
+
+        if(!d) d={total1:0,total2:0};
+
+        if(player===1) d.total1=(d.total1||0)+val;
+        else d.total2=(d.total2||0)+val;
+
+        return d;
+    });
+}
+
+/* ================= リセット ================= */
+
+function resetGame(){
+
+    if(!confirm("完全リセットしますか？")) return;
+
+    roomRef.set({
+        sets:{},
+        total:{total1:0,total2:0}
+    });
+
+    const is8=document.getElementById("mode8").checked;
+    const count=is8?8:7;
+
+    for(let i=0;i<count;i++){
+        document.getElementById(`p1_${i}`).value=0;
+        document.getElementById(`p2_${i}`).value=0;
+    }
+
+    updateScore();
+}
+
+/* ================= ランキング ================= */
+
+function loadRanking(){
+
+    db.ref("players").on("value",snap=>{
+
+        const d=snap.val();
+        if(!d) return;
+
+        let list=Object.entries(d);
+
+        list.sort((a,b)=>b[1].rate-a[1].rate);
+
+        let html="🏆ランキング<br>";
+
+        list.forEach((p,i)=>{
+            html+=`${i+1}. ${p[0]} ${p[1].win}/${p[1].lose} (${p[1].rate.toFixed(1)}%)<br>`;
+        });
+
+        document.getElementById("ranking").innerHTML=html;
+    });
+}
+
+/* ================= 起動 ================= */
+
+createInputs();
+loadRanking();
+updateScore();
+
+</script>
+
+</body>
+</html>
